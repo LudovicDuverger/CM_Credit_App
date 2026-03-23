@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useCaseDetail } from '../hooks/useCaseDetail';
@@ -29,7 +29,12 @@ const CaseDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const { detail, allCases, loading, error } = useCaseDetail(id);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { detail, allCases, loading, refreshing, error } = useCaseDetail(id ? `${id}` : undefined, refreshKey);
+  const handleRefresh = useCallback(() => {
+    if (refreshing) return;
+    setRefreshKey((k) => k + 1);
+  }, [refreshing]);
   const { openingDocId, viewerOpen, viewerBlobUrl, viewerFileName, viewerMimeType, openDocument, closeViewer, downloadFromViewer } = useDocumentViewer();
 
   const currentIndex = useMemo(() => allCases.findIndex((item) => item.id === id), [allCases, id]);
@@ -205,7 +210,7 @@ const CaseDetailPage: React.FC = () => {
     );
   }
 
-  if (error || !detail) {
+  if (!detail) {
     return (
       <div className="detail-page">
         <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-red-700">{error || 'Dossier introuvable'}</div>
@@ -221,12 +226,29 @@ const CaseDetailPage: React.FC = () => {
 
   return (
     <div className="detail-page">
-      <CaseDetailHeader
-        detail={detail}
-        prevCaseId={prevCaseId}
-        nextCaseId={nextCaseId}
-        onOpenMaestroDetail={openMaestroDetail}
-      />
+      {error && (
+        <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
+          {error}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between">
+        <CaseDetailHeader
+          detail={detail}
+          prevCaseId={prevCaseId}
+          nextCaseId={nextCaseId}
+          onOpenMaestroDetail={openMaestroDetail}
+        />
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="ml-4 px-4 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 flex items-center gap-2 shadow-sm"
+          title="Rafraîchir les données du dossier"
+        >
+          <Loader2 size={16} className={refreshing ? 'animate-spin' : ''} />
+          {refreshing ? 'Actualisation...' : 'Rafraîchir'}
+        </button>
+      </div>
 
       <div className="flex gap-6 items-start">
         <div className="flex flex-col gap-6 flex-1 min-w-0">

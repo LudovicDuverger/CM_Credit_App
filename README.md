@@ -6,7 +6,7 @@ Voici les commandes pour lancer le backend et le frontend Maestro UI :
         npm run dev
 
 2. Lancer le frontend (Maestro UI)
-cd ./maestro-ui
+        cd ./maestro-ui
         npm install
         npm run dev
 
