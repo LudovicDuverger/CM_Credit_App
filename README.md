@@ -1,73 +1,84 @@
-# React + TypeScript + Vite
+# CM Credit App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Refactor en architecture séparée:
 
-Currently, two official plugins are available:
+- `backend/`: API Node.js (Express)
+- `frontend/`: interface AngularJS (templates HTML séparés)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Démarrage
 
-## React Compiler
+1. Installer les dépendances backend:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd backend
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Lancer l'application:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+Puis ouvrir:
+
+`http://localhost:3001`
+
+## Mode UiPath réel (au lieu des données mock)
+
+1. Copier le fichier d'exemple:
+
+```bash
+cd backend
+cp .env.example .env
+```
+
+2. Renseigner les valeurs dans `backend/.env`:
+
+- `UIPATH_BASE_URL`
+- `UIPATH_ORG_NAME`
+- `UIPATH_TENANT_NAME`
+- `UIPATH_CLIENT_ID`
+- `UIPATH_CLIENT_SECRET`
+- `UIPATH_SCOPE`
+
+3. Redémarrer le backend:
+
+```bash
+npm run dev
+```
+
+Tu peux vérifier le mode actif avec `GET /api/source`:
+
+- `"mode":"mock"` = configuration incomplète
+- `"mode":"uipath"` = données UiPath actives
+
+## Structure frontend (templates)
+
+- `frontend/app/templates/home.html`
+- `frontend/app/templates/case-detail.html`
+
+Tu peux modifier ces templates directement pour changer l'aspect visuel des pages.
+
+## Endpoints API
+
+- `GET /api/health`
+- `GET /api/cases`
+- `GET /api/cases/:id`
+
+
+## LAncer lee serveur
+cd /Users/ludovic.duverger/Projets/CM_Credit_APPV2
+pkill -f "node server.js" 2>/dev/null || true
+cd /Users/ludovic.duverger/Projets/CM_Credit_APPV2/backend
+node server.js
+
+## Dans un autre terminal (test rapide) :
+curl -s http://localhost:3001/api/health
+
+
+https://staging.uipath.com/france/DefaultTenant/maestro_/case-management/f49c9887-2dee-41cf-97df-fc023ee56c20/overview?folderKey=ca3a3767-d130-4db1-ab3b-d7664a8d72f4
+https://staging.uipath.com/france/DefaultTenant/maestro_/case-management/f49c9887-2dee-41cf-97df-fc023ee56c20/overview?folderKey=0c787285-7c32-4140-ae2b-8cb5b8e36463
+
+
+https://staging.uipath.com/france/DefaultTenant/maestro_/case-management/f49c9887-2dee-41cf-97df-fc023ee56c20/overview?folderKey=0c787285-7c32-4140-ae2b-8cb5b8e36463

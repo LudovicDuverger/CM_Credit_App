@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr" ng-app="cmCreditApp">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>CM Credit App</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular-route.min.js"></script>
+    <script src="/app/app.module.js"></script>
+    <script src="/app/app.routes.js"></script>
+    <script src="/app/services/token.service.js"></script>
+    <script src="/app/services/auth.service.js"></script>
+    <script src="/app/services/api.service.js"></script>
+    <script src="/app/controllers/login.controller.js"></script>
+    <script src="/app/controllers/oauth-callback.controller.js"></script>
+    <script src="/app/controllers/landing.controller.js"></script>
+    <script src="/app/controllers/client-space.controller.js"></script>
+    <script src="/app/controllers/loan-request.controller.js"></script>
+    <script src="/app/controllers/home.controller.js"></script>
+    <script src="/app/controllers/detail.controller.js"></script>
+  </head>
+  <body ng-class="{'employee-theme': isEmployeeSpace}">
+    <header class="topbar">
+      <img src="/UiBank.png" alt="UiBank" class="topbar-logo" />
+      <div class="topbar-page-title" ng-if="pageHeader">
+        <div class="topbar-page-title__main">{{ pageHeader.title }}</div>
+        <div class="topbar-page-title__sub">{{ pageHeader.subtitle }}</div>
+        <div class="topbar-page-title__meta">{{ pageHeader.meta }}</div>
+      </div>
+      <div class="topbar-spacer"></div>
+      <button ng-if="showTopbarLogout"
+              ng-click="logoutFromTopbar()"
+              class="topbar-logout">
+        Déconnexion
+      </button>
+    </header>
+
+    <main class="content" ng-view></main>
+  </body>
+</html>

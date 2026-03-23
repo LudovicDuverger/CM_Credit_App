@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { UiPath } from '@uipath/uipath-typescript/core';
 import { CaseInstances, Cases } from '@uipath/uipath-typescript/cases';
 import { Entities } from '@uipath/uipath-typescript/entities';
-import CaseDetail from './components/CaseDetail';
 
 type TabStatus = 'Running' | 'Completed' | 'Paused' | 'Faulted' | 'Cancelled' | 'All';
 
@@ -37,12 +36,6 @@ interface DataFabricEntity {
 }
 
 type DataFabricRecord = Record<string, unknown>;
-
-interface OpenDocumentResult {
-  url: string;
-  fileName: string;
-  revokeOnClose: boolean;
-}
 
 interface JoinedCaseContext {
   caseId: string;
@@ -326,27 +319,29 @@ const summarizeMainCase = (record?: DataFabricRecord): string => {
   return entries.length > 0 ? entries.join(' · ') : '-';
 };
 
-const getRecordStringField = (record: DataFabricRecord, possibleFields: string[]) => {
-  for (const field of possibleFields) {
-    if (field in record && record[field] !== null && record[field] !== undefined) {
-      const value = String(record[field]).trim();
-      if (value) return value;
-    }
-  }
-  return '';
-};
+// Legacy helper - not used in new React UI
+// const getRecordStringField = (record: DataFabricRecord, possibleFields: string[]): string => {
+//   for (const field of possibleFields) {
+//     if (field in record && record[field] !== null && record[field] !== undefined) {
+//       const value = String(record[field]).trim();
+//       if (value) return value;
+//     }
+//   }
+//   return '';
+// };
 
-const getAttachmentFieldCandidates = (record: DataFabricRecord): string[] => {
-  const preferred = ['File', 'file', 'Document', 'document', 'Documents', 'documents', 'Attachment', 'attachment', 'Attachments', 'attachments'];
-  const recordKeys = Object.keys(record);
-
-  const dynamic = recordKeys.filter((key) => {
-    const normalized = normalizeFieldName(key);
-    return normalized.includes('file') || normalized.includes('document') || normalized.includes('attachment');
-  });
-
-  return [...new Set([...preferred, ...dynamic])];
-};
+// Legacy helper - kept for reference but not used in new React UI
+// const getAttachmentFieldCandidates = (record: DataFabricRecord): string[] => {
+//   const preferred = ['File', 'file', 'Document', 'document', 'Documents', 'documents', 'Attachment', 'attachment', 'Attachments', 'attachments'];
+//   const recordKeys = Object.keys(record);
+//
+//   const dynamic = recordKeys.filter((key) => {
+//     const normalized = normalizeFieldName(key);
+//     return normalized.includes('file') || normalized.includes('document') || normalized.includes('attachment');
+//   });
+//
+//   return [...new Set([...preferred, ...dynamic])];
+// };
 
 const AppBank: React.FC = () => {
   console.log('[AppBank] Component rendering...');
@@ -362,7 +357,7 @@ const AppBank: React.FC = () => {
   const [dataFabricError, setDataFabricError] = useState<string | null>(null);
   const [mainCaseRecords, setMainCaseRecords] = useState<DataFabricRecord[]>([]);
   const [caseDocumentsRecords, setCaseDocumentsRecords] = useState<DataFabricRecord[]>([]);
-  const [caseDocumentsEntityNames, setCaseDocumentsEntityNames] = useState<string[]>([]);
+  // const [caseDocumentsEntityNames, setCaseDocumentsEntityNames] = useState<string[]>([]);
   const [mainCaseRecordsMap, setMainCaseRecordsMap] = useState<Map<string, DataFabricRecord>>(new Map());
   const [caseDocumentsMap, setCaseDocumentsMap] = useState<Map<string, DataFabricRecord[]>>(new Map());
   
@@ -460,24 +455,24 @@ const AppBank: React.FC = () => {
       }
 
       if (documentsEntity?.id) {
-        const resolvedNames = [documentsEntity.name, documentsEntity.displayName, config.caseDocumentsEntityName]
-          .filter((value): value is string => Boolean(value && value.trim()))
-          .map((value) => value.trim());
-        setCaseDocumentsEntityNames([...new Set(resolvedNames)]);
+        // const resolvedNames = [documentsEntity.name, documentsEntity.displayName, config.caseDocumentsEntityName]
+        //   .filter((value): value is string => Boolean(value && value.trim()))
+        //   .map((value) => value.trim());
+        // setCaseDocumentsEntityNames([...new Set(resolvedNames)]);
 
         const documentsResponse = await entitiesApi.getAllRecords(documentsEntity.id, { expansionLevel: 2 });
         const documentsRecords = extractItems<DataFabricRecord>(documentsResponse);
         setCaseDocumentsRecords(documentsRecords);
         setCaseDocumentsMap(buildCaseDocumentsMap(documentsRecords));
       } else {
-        setCaseDocumentsEntityNames([]);
+        // setCaseDocumentsEntityNames([]);
         setCaseDocumentsRecords([]);
         setCaseDocumentsMap(new Map());
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setDataFabricError(`Data Fabric indisponible: ${message}`);
-      setCaseDocumentsEntityNames([]);
+      // setCaseDocumentsEntityNames([]);
       setMainCaseRecords([]);
       setCaseDocumentsRecords([]);
       setMainCaseRecordsMap(new Map());
@@ -539,63 +534,6 @@ const AppBank: React.FC = () => {
     }
   };
 
-  const openCaseDocument = async (record: DataFabricRecord): Promise<OpenDocumentResult> => {
-    const fileName = getRecordStringField(record, ['FileName', 'fileName', 'file_name', 'DocumentName', 'documentName']) || 'document.pdf';
-    const fileType = getRecordStringField(record, ['FileType', 'fileType', 'file_type', 'DocumentType', 'documentType']).toLowerCase();
-
-    if (!sdk) {
-      throw new Error('Session UiPath indisponible.');
-    }
-
-    const recordId = getRecordStringField(record, ['id', 'Id', 'ID', '_id', 'recordId', 'RecordId']);
-    if (!recordId) {
-      throw new Error('Record ID introuvable pour le document.');
-    }
-
-    const entitiesApi = new Entities(sdk);
-    const attachmentFields = getAttachmentFieldCandidates(record);
-    const entityNameCandidates = [
-      ...caseDocumentsEntityNames,
-      config.caseDocumentsEntityName,
-    ].filter((value, index, array) => Boolean(value && value.trim()) && array.findIndex((item) => item.toLowerCase() === value.toLowerCase()) === index);
-
-    let blob: Blob | null = null;
-    let lastError: unknown = null;
-
-    for (const entityName of entityNameCandidates) {
-      for (const fieldName of attachmentFields) {
-        try {
-          blob = await entitiesApi.downloadAttachment({
-            entityName,
-            recordId,
-            fieldName,
-          });
-          if (blob) break;
-        } catch (error) {
-          lastError = error;
-        }
-      }
-      if (blob) break;
-    }
-
-    if (!blob) {
-      const message = lastError instanceof Error ? lastError.message : String(lastError ?? 'Erreur inconnue');
-      throw new Error(`Ouverture impossible (record: ${recordId}). Détail: ${message}`);
-    }
-
-    const looksLikePdf = fileType.includes('pdf') || fileName.toLowerCase().endsWith('.pdf');
-    const normalizedBlob = looksLikePdf && blob.type !== 'application/pdf'
-      ? new Blob([blob], { type: 'application/pdf' })
-      : blob;
-
-    const objectUrl = URL.createObjectURL(normalizedBlob);
-    return {
-      url: objectUrl,
-      fileName,
-      revokeOnClose: true,
-    };
-  };
-
   const onLogout = async () => {
     try {
       if (sdk) {
@@ -609,7 +547,7 @@ const AppBank: React.FC = () => {
       setCaseProcess(null);
       setInstances([]);
       setDataFabricError(null);
-      setCaseDocumentsEntityNames([]);
+      // setCaseDocumentsEntityNames([]);
       setMainCaseRecords([]);
       setCaseDocumentsRecords([]);
       setMainCaseRecordsMap(new Map());
@@ -716,21 +654,28 @@ const AppBank: React.FC = () => {
   if (selectedCaseId) {
     const selectedInstance = instances.find((i) => i.instanceId === selectedCaseId);
     if (selectedInstance) {
-      const joinedContext = getJoinedCaseContext(selectedInstance);
+      // Legacy CaseDetail component not available in new React setup
       return (
-        <div style={{ minHeight: '100vh', background: '#f3f4f6', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-          <CaseDetail
-            instance={selectedInstance}
-            matchedCaseId={joinedContext.caseId}
-            mainCaseRecord={joinedContext.mainCaseRecord}
-            documentRecords={joinedContext.documentRecords}
-            matchCandidates={joinedContext.candidates}
-            mainCaseRecordCaseId={joinedContext.mainCaseRecordCaseId}
-            mainCaseEntityId={joinedContext.mainCaseEntityId}
-            documentCaseIds={joinedContext.documentCaseIds}
-            onOpenDocument={openCaseDocument}
-            onBack={() => setSelectedCaseId(null)}
-          />
+        <div style={{ minHeight: '100vh', background: '#f3f4f6', fontFamily: 'system-ui, -apple-system, sans-serif', padding: '1.5rem' }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <button
+              onClick={() => setSelectedCaseId(null)}
+              style={{ padding: '0.75rem 1rem', marginBottom: '1rem', backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '0.375rem', cursor: 'pointer' }}
+            >
+              ← Back to Cases
+            </button>
+            <div style={{ backgroundColor: '#fff', padding: '2rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+                {selectedInstance.instanceDisplayName || selectedInstance.instanceId}
+              </h2>
+              <p style={{ color: '#64748b', marginBottom: '1rem' }}>
+                Status: <strong style={{ color: '#0f172a' }}>{selectedInstance.status}</strong>
+              </p>
+              <p style={{ color: '#64748b' }}>
+                This page is not fully implemented in the new React UI. Please use the main dashboard to view case details.
+              </p>
+            </div>
+          </div>
         </div>
       );
     }

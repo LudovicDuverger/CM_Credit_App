@@ -1,0 +1,164 @@
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+  <button ng-click="goBack()" style="padding: 0.5rem 1rem; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+    ← Retour à la liste
+  </button>
+  <div style="display: flex; gap: 0.5rem;">
+    <button ng-click="openMaestroDetail()" style="padding: 0.5rem 1rem; background: #0f766e; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      Detail
+    </button>
+    <button ng-click="goPrevious()" ng-disabled="!prevCaseId" style="padding: 0.5rem 1rem; background: #0ea5b7; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1.2rem;" ng-style="!prevCaseId ? {'opacity': '0.5', 'cursor': 'not-allowed'} : {}">
+      ← Précédent
+    </button>
+    <button ng-click="goNext()" ng-disabled="!nextCaseId" style="padding: 0.5rem 1rem; background: #0ea5b7; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1.2rem;" ng-style="!nextCaseId ? {'opacity': '0.5', 'cursor': 'not-allowed'} : {}">
+      Suivant →
+    </button>
+  </div>
+</div>
+
+<section class="card" ng-if="loading">Chargement du dossier...</section>
+<section class="card" ng-if="error">{{ error }}</section>
+
+<div ng-if="!loading && !error && caseDetail">
+  <section class="card">
+    <h2 style="display: flex; align-items: center; gap: 1rem;">
+      Détail dossier
+      <span ng-if="caseDetail.status" 
+            style="display: flex; align-items: center; gap: 0.4rem;">
+        <span ng-style="{
+            'display': 'inline-block',
+            'width': '1.2rem',
+            'height': '1.2rem',
+            'borderRadius': '50%',
+            'background': (caseDetail.status.toLowerCase() === 'faulted' ? '#dc2626' : (caseDetail.status.toLowerCase() === 'running' || caseDetail.status.toLowerCase() === 'en cours' ? '#22c55e' : (caseDetail.status.toLowerCase() === 'cancelled' ? '#f59e42' : '#d1d5db'))),
+            'border': '2px solid #fff',
+            'boxShadow': '0 0 0 2px #e5e7eb'
+          }"
+          title="Statut du dossier">
+        </span>
+        <span style="font-size: 1rem; font-weight: 600; color: #374151;">{{ caseDetail.status }}</span>
+      </span>
+    </h2>
+    <div class="meta" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 2.5rem; align-items: center;">
+      <div style="display: flex; gap: 2.5rem; align-items: flex-start;">
+        <div style="flex:1; display: flex; flex-direction: column; gap: 0.5rem;">
+          <div><strong>ID:</strong> <span>{{ caseDetail.caseId || caseDetail.id }}</span></div>
+          <div><strong>Date d'ouverture:</strong> <span>{{ formatDate(caseDetail.createdTime) }}</span></div>
+        </div>
+        <div style="flex:1; display: flex; flex-direction: column; gap: 0.5rem;">
+          <div><strong>Stage courant:</strong> <span>{{ caseDetail.currentStage || '-' }}</span></div>
+          <div><strong>Statut SLA:</strong> <span ng-style="getSlaStyle(caseDetail.slaStatus)">{{ caseDetail.slaStatus || 'N/A' }}</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid-two">
+    <section class="card">
+      <h3>Client</h3>
+      <div class="meta">
+         <strong>Nom:</strong><span>{{ caseDetail.client.name }}</span>
+        <strong>Date Naissance:</strong><span>{{ caseDetail.client.birthDate }}</span>
+        <strong>Taux endettement:</strong><span>{{ caseDetail.client.debtRatio }}</span>
+        <strong>Revenus:</strong><span>{{ caseDetail.client.incomes | number }} €</span>
+        <strong>Charges:</strong><span>{{ caseDetail.client.expenses | number }} €</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Information crédit</h3>
+      <div class="meta">
+        <strong>Type Crédit:</strong><span>{{ caseDetail.credit.creditType }}</span>
+        <strong>Montant:</strong><span>{{ caseDetail.credit.requestedAmount | number }} €</span>
+        <strong>Durée (Mois):</strong><span>{{ caseDetail.credit.duration }}</span>
+        <strong>Décision finale:</strong><span>{{ caseDetail.credit.finalDecision }}</span>
+        <strong>Date de décaissement:</strong><span>{{ caseDetail.credit.paymentDate }}</span>
+      </div>
+    </section>
+  </div>
+
+  <!-- Stages et tâches -->
+  <section class="card" ng-if="caseDetail.stages && caseDetail.stages.length > 0">
+    <h3>Stages &amp; Historique des tâches</h3>
+    <div ng-repeat="stage in caseDetail.stages track by stage.id" style="margin-bottom: 1.5rem;">
+      <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+        <span style="font-weight: 600; font-size: 1rem;">{{ stage.name }}</span>
+        <span style="padding: 0.2rem 0.65rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600;"
+              ng-style="getStageStyle(stage.status)">
+          {{ stage.status }}
+        </span>
+        <span ng-if="stage.sla" style="font-size: 0.8rem; color: #6b7280; margin-left: 0.25rem;">
+          SLA: {{ stage.sla.length }} {{ stage.sla.duration }}
+        </span>
+      </div>
+      <table class="table" ng-if="stage.tasks && stage.tasks.length > 0">
+        <thead>
+          <tr>
+            <th>Tâche</th>
+            <th>Type</th>
+            <th>Statut</th>
+            <th>Début</th>
+            <th>Fin</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="task in stage.tasks track by task.id">
+            <td>{{ task.name }}</td>
+            <td style="font-size: 0.85rem; color: #6b7280;">{{ task.type }}</td>
+            <td>
+              <span style="padding: 0.15rem 0.55rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600;"
+                    ng-style="getTaskStyle(task.status)">
+                {{ task.status }}
+              </span>
+            </td>
+            <td style="font-size: 0.85rem;">{{ formatDate(task.startedTime) }}</td>
+            <td style="font-size: 0.85rem;">{{ formatDate(task.completedTime) }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div ng-if="!stage.tasks || stage.tasks.length === 0" style="color: #9ca3af; font-size: 0.9rem; padding-left: 0.5rem;">
+        Aucune tâche
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h3>Documents</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Nom</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="doc in caseDetail.documents track by doc.id">
+          <td>{{ doc.fileType }}</td>
+          <td>{{ doc.fileName }}</td>
+          <td>
+            <span class="link" ng-click="openDocument(doc.url, doc.fileName)">Viewer</span>
+            &nbsp;|&nbsp;
+            <span class="link" ng-click="openDocumentInNewTab(doc.url, doc.fileName)">Nouvel onglet</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+
+<div ng-if="viewerOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 2000;">
+  <div style="width: 90vw; height: 90vh; background: #fff; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column;">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid #e5e7eb;">
+      <strong>{{ viewerTitle || 'Document' }}</strong>
+      <div style="display: flex; gap: 0.5rem;">
+        <button ng-click="openDocumentInNewTab(viewerSourceUrl, viewerTitle)" style="padding: 0.45rem 0.8rem; border: none; border-radius: 6px; background: #0ea5b7; color: white; cursor: pointer;">
+          Ouvrir dans un onglet
+        </button>
+        <button ng-click="closeViewer()" style="padding: 0.45rem 0.8rem; border: none; border-radius: 6px; background: #6c757d; color: white; cursor: pointer;">
+          Fermer
+        </button>
+      </div>
+    </div>
+    <iframe ng-src="{{ viewerSafeUrl }}" style="width: 100%; height: 100%; border: 0;" title="Document viewer"></iframe>
+  </div>
+</div>

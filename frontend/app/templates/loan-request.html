@@ -1,0 +1,208 @@
+<div class="loan-request-page">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <button ng-click="goBack()" style="padding: 0.5rem 1rem; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      ← Retour à mon espace
+    </button>
+  </div>
+
+  <form class="card loan-request-form" name="loanRequestForm" novalidate>
+    <div class="loan-request-scroll">
+  <div class="loan-section-card">
+    <h3 style="margin-top: 0;">Identité</h3>
+    <div class="loan-grid-3" style="margin-bottom: 0.2rem;">
+      <div class="meta loan-meta">
+        <strong>Code client</strong><span>{{ loanFormData.clientCode }}</span>
+        <strong>Nom / Prénom</strong><span>{{ loanFormData.fullName }}</span>
+        <strong>Date de naissance</strong><span>{{ loanFormData.birthDate }}</span>
+      </div>
+      <div class="meta loan-meta">
+        <strong>Lieu de naissance</strong><span>{{ loanFormData.birthPlace }}</span>
+        <strong>Nationalité</strong><span>{{ loanFormData.nationality }}</span>
+      </div>
+      <div class="meta loan-meta">
+        <strong>Situation familiale</strong><span>{{ loanFormData.familyStatus }}</span>
+        <strong>Situation logement</strong><span>{{ loanFormData.housingStatus }}</span>
+        <strong>Téléphone</strong><span>{{ loanFormData.phone }}</span>
+        <strong>Email</strong><span>{{ loanFormData.email }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="loan-section-card">
+    <h3>Coordonnées</h3>
+    <div class="meta loan-meta" style="margin-bottom: 0.2rem;">
+      <strong>Adresse</strong><span>{{ loanFormData.address }}</span>
+      <strong>Code postal / Ville</strong><span>{{ loanFormData.city }}</span>
+    </div>
+  </div>
+
+  <div class="loan-section-card">
+    <h3>Situation professionnelle</h3>
+    <div class="loan-grid-3" style="margin-bottom: 0.2rem;">
+      <div class="meta loan-meta">
+        <strong>Profession</strong><span>{{ loanFormData.jobTitle }}</span>
+      </div>
+      <div class="meta loan-meta">
+        <strong>Employeur</strong><span>{{ loanFormData.employer }}</span>
+      </div>
+      <div class="meta loan-meta">
+        <strong>Type de contrat</strong><span>{{ loanFormData.contractType }}</span>
+        <strong>Ancienneté</strong><span>{{ loanFormData.seniority }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="loan-section-card">
+    <h3>Revenus &amp; charges</h3>
+    <div class="loan-grid-3" style="margin-bottom: 0.2rem;">
+      <div class="meta loan-meta">
+        <strong>Revenus nets</strong><span>{{ loanFormData.netIncome | number }} € / mois</span>
+      </div>
+      <div class="meta loan-meta">
+        <strong>Autres revenus</strong><span>{{ loanFormData.otherIncome | number }} €</span>
+      </div>
+      <div class="meta loan-meta">
+        <strong>Charges mensuelles</strong><span>{{ loanFormData.monthlyCharges | number }} € / mois</span>
+        <strong>Taux endettement</strong><span>{{ loanFormData.debtRatio }}%</span>
+        <strong>Crédits en cours</strong><span>{{ loanFormData.existingCredits }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="loan-section-card">
+    <h3>Projet &amp; prêt demandé</h3>
+    <div class="loan-grid-3" style="margin-bottom: 0.2rem;">
+      <div class="loan-field">
+        <label style="display: block; font-weight: 600; margin-bottom: 0.35rem;">Objet du prêt / financement *</label>
+        <textarea
+          ng-model="loanFormData.loanPurpose"
+          placeholder="Ex: Financement projet étude fils aîné"
+          rows="4"
+          style="width: 100%; height: 174px; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px; resize: vertical; font-family: inherit;"
+        ></textarea>
+      </div>
+      <div class="loan-field">
+        <label style="display: block; font-weight: 600; margin-bottom: 0.35rem;">Type de crédit</label>
+        <select
+          ng-model="loanFormData.creditType"
+          ng-options="option for option in creditTypeOptions"
+          style="width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 0.75rem; background: #fff;"
+        ></select>
+
+        <label style="display: block; font-weight: 600; margin-bottom: 0.35rem;">Montant demandé (€) *</label>
+        <input
+          type="text"
+          inputmode="numeric"
+          ng-model="loanFormData.requestedAmount"
+          ng-model-options="{ updateOn: 'default blur' }"
+          placeholder="Ex: 15000"
+          style="width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px;"
+        />
+
+        <label style="display: block; font-weight: 600; margin: 0.75rem 0 0.35rem;">Durée (mois)</label>
+        <input
+          type="number"
+          min="1"
+          step="1"
+          ng-model="loanFormData.durationMonths"
+          placeholder="48"
+          style="width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px;"
+        />
+      </div>
+    </div>
+  </div>
+
+  <div class="loan-section-card">
+    <h3>Coordonnées bancaires</h3>
+    <div class="loan-grid-3" style="margin-bottom: 0.2rem;">
+      <div class="meta loan-meta">
+        <strong>Banque</strong><span>{{ loanFormData.bankName }}</span>
+      </div>
+      <div class="meta loan-meta">
+        <strong>IBAN</strong><span>{{ loanFormData.iban }}</span>
+      </div>
+      <div class="meta loan-meta">
+        <strong>Titulaire</strong><span>{{ loanFormData.accountHolder }}</span>
+        <strong>Documents fournis</strong><span>{{ loanFormData.documentsProvided }}</span>
+      </div>
+    </div>
+  </div>
+
+  <h3>Pièces justificatives à télécharger</h3>
+  <div class="loan-dropzone"
+       ng-class="{'is-drag-over': isDragOver}"
+       ondragover="event.preventDefault(); angular.element(this).scope().onDragOver();"
+       ondragleave="event.preventDefault(); angular.element(this).scope().onDragLeave();"
+       ondrop="event.preventDefault(); angular.element(this).scope().onFilesDropped(event);">
+    <div style="font-size: 1.5rem;">📎</div>
+    <p style="margin: 0.4rem 0 0.2rem; font-weight: 600; color: #9a3412;">Glissez-déposez vos fichiers ici</p>
+    <p style="margin: 0; font-size: 0.85rem; color: #64748b;">PDF, JPG, PNG, DOCX (max 10 MB/fichier)</p>
+
+    <input id="loan-file-input"
+           type="file"
+           multiple
+           style="display: none;"
+           onchange="angular.element(this).scope().onFilesSelected(this.files); this.value='';" />
+
+    <button type="button"
+            ng-click="openFilePicker()"
+            style="margin-top: 0.8rem; padding: 0.5rem 0.9rem; background: #ff4b1f; color: #fff; border: none; border-radius: 6px; cursor: pointer;">
+      Choisir des fichiers
+    </button>
+  </div>
+
+  <div ng-if="uploadedFiles.length > 0" style="margin-bottom: 1rem;">
+    <div style="font-weight: 600; margin-bottom: 0.45rem; color: #334155;">Fichiers sélectionnés ({{ uploadedFiles.length }})</div>
+    <div class="loan-file-item" ng-repeat="file in uploadedFiles track by file.uid">
+      <div>
+        <div style="font-size: 0.9rem; font-weight: 600; color: #1f2937;">{{ file.name }}</div>
+        <div style="font-size: 0.78rem; color: #6b7280;">{{ file.sizeLabel }}</div>
+      </div>
+      <button type="button"
+              ng-click="removeUploadedFile(file.uid)"
+              style="padding: 0.35rem 0.55rem; background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 6px; cursor: pointer;">
+        Retirer
+      </button>
+    </div>
+    <button type="button"
+            ng-click="clearUploadedFiles()"
+            style="margin-top: 0.5rem; padding: 0.4rem 0.65rem; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer;">
+      Vider la liste
+    </button>
+  </div>
+
+  <div style="padding: 0.75rem 1rem; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; margin-bottom: 1rem;">
+    <label style="display: flex; align-items: center; gap: 0.55rem; font-weight: 600; color: #334155; cursor: pointer;">
+      <input type="checkbox" ng-model="loanFormData.acceptSolvabilityStudy" />
+      J'accepte l’étude de solvabilité (DEMO) *
+    </label>
+  </div>
+    </div>
+
+    <div class="loan-request-actions">
+      <button
+        type="button"
+        ng-click="cancel()"
+        style="padding: 0.65rem 1.1rem; background: #64748b; color: #fff; border: none; border-radius: 6px; cursor: pointer;"
+      >
+        Annuler
+      </button>
+      <button
+        type="button"
+        ng-click="submit()"
+        ng-disabled="submitting"
+        ng-style="submitting ? {'opacity':'0.6','cursor':'not-allowed'} : {}"
+        style="padding: 0.65rem 1.1rem; background: #ff4b1f; color: #fff; border: none; border-radius: 6px; cursor: pointer;"
+      >
+        {{ submitting ? 'Soumission...' : 'Soumettre' }}
+      </button>
+    </div>
+
+    <div ng-if="submitSuccess" style="margin-top: 0.8rem; padding: 0.65rem 0.8rem; background: #dcfce7; color: #166534; border: 1px solid #86efac; border-radius: 8px;">
+      {{ submitSuccess }}
+    </div>
+    <div ng-if="submitError" style="margin-top: 0.8rem; padding: 0.65rem 0.8rem; background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 8px;">
+      {{ submitError }}
+    </div>
+  </form>
+</div>

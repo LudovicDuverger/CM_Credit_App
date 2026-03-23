@@ -1,3 +1,7 @@
+  @import "tailwindcss";
+@source "../index.html";
+@source "./**/*.{js,ts,jsx,tsx}";
+
 * {
   margin: 0;
   padding: 0;
@@ -15,6 +19,214 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+.detail-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail-page .grid {
+  gap: 18px;
+}
+
+/* Toutes les grilles directes dans detail-page heritent du gap */
+.detail-page > .grid {
+  gap: 18px;
+}
+
+.detail-page .bg-white.border.border-slate-200.rounded-2xl {
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+}
+
+.detail-page .bg-white.border.border-slate-200.rounded-2xl.p-5 {
+  padding: 20px;
+}
+
+.detail-page .bg-white.border.border-slate-200.rounded-2xl.p-6 {
+  padding: 22px;
+}
+
+.detail-page .bg-white.border.border-slate-200.rounded-2xl.p-7,
+.detail-page .bg-white.border.border-slate-200.rounded-2xl.p-8 {
+  padding: 24px;
+}
+
+.detail-page .compact-info-grid {
+  column-gap: 18px;
+  row-gap: 6px;
+}
+
+.detail-page .compact-info-grid > div {
+  line-height: 1.15;
+}
+
+.detail-page .compact-info-title {
+  margin-bottom: 6px;
+  line-height: 1.15;
+}
+
+.detail-page .compact-info-content {
+  margin-top: 10px;
+}
+
+.detail-page table thead th {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.detail-page table tbody td {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.detail-page h1,
+.detail-page h2,
+.detail-page h3 {
+  line-height: 1.2;
+}
+
+.portal-topnav {
+  height: 80px;
+  padding: 0 20px 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.portal-topnav-left {
+  min-width: 160px;
+}
+
+.portal-topnav-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.portal-topnav-search {
+  flex: 1;
+  max-width: 660px;
+  min-width: 260px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 16px;
+}
+
+.portal-topnav-divider {
+  height: 42px;
+  width: 1px;
+  background: #e2e8f0;
+}
+
+.portal-topnav-user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.portal-topnav-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+}
+
+@media (max-width: 900px) {
+  .portal-topnav {
+    padding: 0 18px;
+  }
+
+  .portal-topnav-left {
+    display: none;
+  }
+
+  .portal-topnav-search {
+    min-width: 0;
+  }
+}
+
+.loan-form-page {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.loan-form-main {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.loan-section {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 22px 24px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+}
+
+.loan-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.loan-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 18px;
+  row-gap: 14px;
+}
+
+.loan-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.loan-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.loan-input,
+.loan-select {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.loan-input:focus,
+.loan-select:focus {
+  outline: none;
+  border-color: #23b7e5;
+  box-shadow: 0 0 0 3px rgba(35, 183, 229, 0.2);
+}
+
+.loan-upload-box {
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  background: #f8fafc;
+  padding: 24px;
+}
+
+@media (max-width: 900px) {
+  .loan-section {
+    padding: 18px;
+  }
+
+  .loan-grid {
+    grid-template-columns: 1fr;
+  }
+}

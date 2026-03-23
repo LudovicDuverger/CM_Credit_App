@@ -1,0 +1,331 @@
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.topbar {
+  background: #ff4b1f;
+  color: white;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 76px;
+}
+
+.topbar-spacer {
+  margin-left: auto;
+}
+
+.topbar-logout {
+  padding: 0.45rem 0.85rem;
+  border: 1px solid #000;
+  background: #000;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.topbar-logout:hover {
+  background: #111;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.topbar p {
+  margin: 0.25rem 0 0;
+  opacity: 0.9;
+  font-size: 0.9rem;
+}
+
+.topbar-logo {
+  height: 56px;
+  width: auto;
+  max-width: 100%;
+  display: block;
+}
+
+.topbar-page-title {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.topbar-page-title__main {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.topbar-page-title__sub {
+  font-size: 0.86rem;
+  opacity: 0.95;
+  line-height: 1.25;
+}
+
+.topbar-page-title__meta {
+  font-size: 0.78rem;
+  opacity: 0.85;
+  line-height: 1.2;
+}
+
+.content {
+  max-width: 1100px;
+  margin: 1.2rem auto;
+  padding: 0 1rem;
+}
+
+.card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 0.65rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.link {
+  color: #ea580c;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.employee-theme .topbar {
+  background: #12a9bb;
+}
+
+.employee-theme .link {
+  color: #0b7280;
+}
+
+.grid-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  row-gap: 0.45rem;
+}
+
+.back {
+  display: inline-block;
+  margin-bottom: 0.8rem;
+}
+
+/* Landing page */
+.landing-wrapper {
+  max-width: 700px;
+  margin: 4rem auto;
+  text-align: center;
+}
+
+.landing-welcome h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin: 0 0 0.5rem;
+}
+
+.landing-welcome p {
+  color: #6b7280;
+  font-size: 1.05rem;
+  margin: 0 0 2.5rem;
+}
+
+.landing-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.landing-card {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem 1.75rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.18s, box-shadow 0.18s, transform 0.15s;
+  text-align: left;
+}
+
+.landing-card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.13);
+  transform: translateY(-2px);
+}
+
+.landing-card--client:hover {
+  border-color: #ff8a5b;
+}
+
+.landing-card--employee:hover {
+  border-color: #ff6e3d;
+}
+
+.landing-card__icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.landing-card__content {
+  flex: 1;
+}
+
+.landing-card__content h3 {
+  margin: 0 0 0.3rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.landing-card__content p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.landing-card__arrow {
+  font-size: 1.4rem;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+/* Loan request page */
+.loan-request-page {
+  height: calc(100dvh - 150px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.loan-request-form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.loan-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.loan-grid-3 > * {
+  min-width: 0;
+}
+
+.loan-meta {
+  grid-template-columns: minmax(120px, 40%) minmax(0, 1fr);
+}
+
+.loan-meta strong,
+.loan-meta span {
+  overflow-wrap: anywhere;
+}
+
+.loan-field {
+  min-width: 0;
+}
+
+.loan-request-form input,
+.loan-request-form textarea {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.loan-section-card {
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #fda47d;
+  border-radius: 10px;
+  padding: 0.85rem 0.9rem;
+  background: #fffdfa;
+  margin-bottom: 1rem;
+}
+
+.loan-section-card h3 {
+  margin: 0 0 0.75rem;
+  color: #9a3412;
+}
+
+.loan-request-scroll {
+  overflow-y: auto;
+  padding-right: 0.35rem;
+  min-height: 0;
+}
+
+.loan-request-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.8rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid #e5e7eb;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 -4px 10px rgba(15, 23, 42, 0.06);
+  z-index: 2;
+}
+
+.loan-dropzone {
+  border: 2px dashed #fdba74;
+  background: #fff7ed;
+  border-radius: 10px;
+  padding: 1.1rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.loan-dropzone.is-drag-over {
+  border-color: #ff4b1f;
+  background: #ffedd5;
+}
+
+.loan-file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 0.55rem 0.7rem;
+  margin-bottom: 0.45rem;
+}
+
+@media (max-width: 760px) {
+  .loan-grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .loan-grid-3 > .loan-field {
+    grid-column: auto !important;
+  }
+}

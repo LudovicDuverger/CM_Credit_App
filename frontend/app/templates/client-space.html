@@ -1,0 +1,139 @@
+<div style="display: flex; justify-content: flex-start; align-items: center; margin-bottom: 1.5rem;">
+  <button ng-click="goBack()" style="padding: 0.5rem 1rem; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+    ← Retour à l'accueil
+  </button>
+</div>
+
+<!-- En-tête client -->
+<div class="client-header card" style="background: linear-gradient(135deg, #ff4b1f 0%, #f97316 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+  <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+    <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">👤</div>
+    <div>
+      <h2 style="margin: 0; font-size: 1.3rem;">{{ client.firstName }} {{ client.lastName }}</h2>
+      <p style="margin: 0; opacity: 0.85; font-size: 0.9rem;">Client depuis {{ client.since }} · Ref. {{ client.ref }}</p>
+      <p style="margin: 0.2rem 0 0; opacity: 0.75; font-size: 0.85rem;">{{ client.address }}, {{ client.city }} · {{ client.email }}</p>
+    </div>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
+    <div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 0.75rem;">
+      <div style="font-size: 0.8rem; opacity: 0.8;">Score crédit</div>
+      <div style="font-size: 1.4rem; font-weight: 700;">{{ client.creditScore }}</div>
+    </div>
+    <div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 0.75rem;">
+      <div style="font-size: 0.8rem; opacity: 0.8;">Revenus nets / mois</div>
+      <div style="font-size: 1.4rem; font-weight: 700;">{{ client.monthlyIncome | number }} €</div>
+    </div>
+    <div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 0.75rem;">
+      <div style="font-size: 0.8rem; opacity: 0.8;">Taux endettement</div>
+      <div style="font-size: 1.4rem; font-weight: 700;">{{ client.debtRatio }}%</div>
+    </div>
+  </div>
+</div>
+
+<!-- Informations personnelles & professionnelles -->
+<div class="grid-two">
+  <section class="card">
+    <h3 style="margin-top: 0;">Informations personnelles</h3>
+    <div class="meta">
+      <strong>Date de naissance:</strong><span>{{ client.birthDate }}</span>
+      <strong>Lieu de naissance:</strong><span>{{ client.birthPlace }}</span>
+      <strong>Nationalité:</strong><span>{{ client.nationality }}</span>
+      <strong>Situation familiale:</strong><span>{{ client.familySituation }}</span>
+      <strong>Logement:</strong><span>{{ client.housingSituation }}</span>
+      <strong>Téléphone:</strong><span>{{ client.phone }}</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h3 style="margin-top: 0;">Situation professionnelle</h3>
+    <div class="meta">
+      <strong>Profession:</strong><span>{{ client.profession }}</span>
+      <strong>Employeur:</strong><span>{{ client.employer }}</span>
+      <strong>Contrat:</strong><span>{{ client.contractType }}</span>
+      <strong>Ancienneté:</strong><span>{{ client.seniority }}</span>
+      <strong>Revenus nets:</strong><span>{{ client.monthlyIncome | number }} € / mois</span>
+      <strong>Charges mensuelles:</strong><span>{{ client.monthlyExpenses | number }} € / mois</span>
+    </div>
+  </section>
+</div>
+
+<!-- Comptes bancaires -->
+<section class="card">
+  <h3 style="margin-top: 0;">Mes comptes</h3>
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem;">
+    <div ng-repeat="account in client.accounts" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; background: #f9fafb;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <div style="font-size: 0.8rem; color: #6b7280;">{{ account.type }}</div>
+          <div style="font-weight: 600; font-size: 0.95rem; margin-top: 0.2rem;">{{ account.label }}</div>
+          <div style="font-size: 0.8rem; color: #9ca3af; margin-top: 0.1rem;">{{ account.iban }}</div>
+        </div>
+        <div style="font-size: 1.4rem;">{{ account.icon }}</div>
+      </div>
+      <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e5e7eb;">
+        <span style="font-size: 1.2rem; font-weight: 700;" ng-style="{'color': account.balance >= 0 ? '#166534' : '#b91c1c'}">
+          {{ account.balance | number }} €
+        </span>
+        <span style="font-size: 0.8rem; color: #6b7280; margin-left: 0.5rem;">{{ account.balanceLabel }}</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Produits & crédits en cours -->
+<div class="grid-two" style="grid-template-columns: 7fr 3fr;">
+  <section class="card">
+    <h3 style="margin-top: 0;">Demandes en cours</h3>
+    <div ng-if="sessionRequests.length === 0" style="color: #9ca3af; font-size: 0.9rem;">Aucune demande initiée dans cette session.</div>
+    <div ng-repeat="request in sessionRequests track by $index" style="display: grid; grid-template-columns: 1.15fr 1.3fr 1fr 0.95fr auto; gap: 0.65rem; align-items: center; padding: 0.65rem 0; border-bottom: 1px solid #f3f4f6;">
+      <div>
+        <div style="font-size: 0.75rem; color: #6b7280;">Case ID</div>
+        <div style="font-weight: 600; font-size: 0.9rem; color: #1f2937;">{{ request.caseId }}</div>
+      </div>
+      <div>
+        <div style="font-size: 0.75rem; color: #6b7280;">Date de la demande</div>
+        <div style="font-size: 0.85rem; color: #334155;">{{ formatRequestDate(request.requestDate) }}</div>
+      </div>
+      <div>
+        <div style="font-size: 0.75rem; color: #6b7280;">Statut dossier</div>
+        <div style="margin-top: 0.15rem;">
+          <span ng-style="getRequestStatusStyle(request.dossierStatus || 'Initiation')" style="font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 999px; display: inline-block; font-weight: 600;">
+            {{ request.dossierStatus || 'Initiation' }}
+          </span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size: 0.75rem; color: #6b7280;">Documents</div>
+        <div style="font-size: 0.85rem; color: #334155;">{{ request.documentsCount || 0 }}</div>
+      </div>
+      <button type="button" ng-click="viewRequest(request)" style="padding: 0.35rem 0.7rem; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer;">
+        Voir
+      </button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h3 style="margin-top: 0;">Produits souscrits</h3>
+    <div ng-repeat="product in client.products" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid #f3f4f6;">
+      <span style="font-size: 1.3rem;">{{ product.icon }}</span>
+      <div>
+        <div style="font-weight: 600; font-size: 0.9rem;">{{ product.name }}</div>
+        <div style="font-size: 0.8rem; color: #6b7280;">{{ product.desc }}</div>
+      </div>
+      <span style="margin-left: auto; font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 999px; background: #ffedd5; color: #c2410c;">Actif</span>
+    </div>
+  </section>
+</div>
+
+<!-- CTA Demande de crédit -->
+<section class="card" style="border: 2px solid #ff8a5b; background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); text-align: center; padding: 2rem;">
+  <div style="font-size: 2rem; margin-bottom: 0.5rem;">💳</div>
+  <h3 style="margin: 0 0 0.5rem; color: #9a3412;">Faire une demande de crédit</h3>
+  <p style="color: #c2410c; margin: 0 0 0.5rem; font-size: 0.95rem;">Simulation personnalisée · Réponse rapide · Sans engagement</p>
+  <p style="color: #6b7280; margin: 0 0 1.25rem; font-size: 0.85rem;">
+    Projet en cours : <strong>Financement étude fils aîné</strong> — 15 000 € sur 48 mois
+  </p>
+  <button ng-click="goToLoanRequest()" style="padding: 0.75rem 2rem; background: #ff4b1f; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; box-shadow: 0 2px 8px rgba(255,75,31,0.3);">
+    Faire ma demande →
+  </button>
+</section>
