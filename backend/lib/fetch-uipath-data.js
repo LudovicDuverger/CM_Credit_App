@@ -18,11 +18,13 @@ import {
   getCaseTasksData,
   getCaseActivityData,
   inferCurrentStageName,
+} from './case-processors.js';
+import {
+  readEntityRecordsWithFallback,
   matchesTargetCaseModel,
   matchesTargetProcessKey,
   matchesTargetFolder,
-} from './case-processors.js';
-import { readEntityRecordsWithFallback } from './entity-operations.js';
+} from './entity-operations.js';
 import { mapTaskLikeObject } from './data-mappers.js';
 
 export const fetchUiPathData = async (token) => {
