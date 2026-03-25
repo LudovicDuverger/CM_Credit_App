@@ -53,7 +53,7 @@ body {
 
 .detail-page .compact-info-grid {
   column-gap: 18px;
-  row-gap: 6px;
+  row-gap: 12px;
 }
 
 .detail-page .compact-info-grid > div {

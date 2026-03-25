@@ -9,7 +9,7 @@ interface Props {
 const CaseClientInfo: React.FC<Props> = ({ client }) => (
   <section className="rounded-2xl border border-slate-200 bg-white p-6">
     <h3 className="compact-info-title font-semibold text-slate-900">Client</h3>
-    <div className="compact-info-grid grid grid-cols-1 md:grid-cols-2 text-sm text-slate-700">
+    <div className="compact-info-grid grid grid-cols-1 md:grid-cols-2 gap-y-3 text-sm text-slate-700">
       <div className="flex flex-col gap-0.5"><span className="font-semibold">Nom:</span><span>{client?.name || '-'}</span></div>
       <div className="flex flex-col gap-0.5"><span className="font-semibold">Date naissance:</span><span>{client?.birthDate || '-'}</span></div>
       <div className="flex flex-col gap-0.5"><span className="font-semibold">Taux endettement:</span><span>{client?.debtRatio || '-'}</span></div>
