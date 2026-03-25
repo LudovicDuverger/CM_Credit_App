@@ -12,10 +12,8 @@ import {
   isAllowedChronologyElementType,
   isDisplayableExecutionName,
   toTimestamp,
-  buildMaestroDetailUrl,
 } from '../utils/caseFormatters';
 import CaseDetailHeader from '../components/CaseDetail/CaseDetailHeader';
-import CaseGeneralInfo from '../components/CaseDetail/CaseGeneralInfo';
 import CaseStagesPipeline from '../components/CaseDetail/CaseStagesPipeline';
 import CaseClientInfo from '../components/CaseDetail/CaseClientInfo';
 import CaseCreditInfo from '../components/CaseDetail/CaseCreditInfo';
@@ -192,12 +190,6 @@ const CaseDetailPage: React.FC = () => {
     return deduped;
   }, [detail, currentAppTask, completedAppTasks]);
 
-  const openMaestroDetail = () => {
-    const maestroUrl = buildMaestroDetailUrl(detail?.id, detail?.folderKey);
-    if (!maestroUrl) return;
-    window.open(maestroUrl, '_blank', 'noopener,noreferrer');
-  };
-
   if (loading) {
     return (
       <div className="detail-page">
@@ -236,7 +228,6 @@ const CaseDetailPage: React.FC = () => {
           detail={detail}
           prevCaseId={prevCaseId}
           nextCaseId={nextCaseId}
-          onOpenMaestroDetail={openMaestroDetail}
         />
         <button
           onClick={handleRefresh}
@@ -251,7 +242,6 @@ const CaseDetailPage: React.FC = () => {
 
       <div className="flex gap-6 items-start">
         <div className="flex flex-col gap-6 flex-1 min-w-0">
-          <CaseGeneralInfo detail={detail} />
           {!!orderedStages.length && (
             <CaseStagesPipeline primaryStages={primaryStages} inProgressSecondaryStages={inProgressSecondaryStages} />
           )}

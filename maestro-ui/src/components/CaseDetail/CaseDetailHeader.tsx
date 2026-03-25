@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, ChevronRight, ExternalLink } from 'lucide-react';
+import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { CaseDetail } from '../../services/cases';
@@ -8,10 +8,9 @@ interface Props {
   detail: CaseDetail;
   prevCaseId?: string;
   nextCaseId?: string;
-  onOpenMaestroDetail: () => void;
 }
 
-const CaseDetailHeader: React.FC<Props> = ({ detail, prevCaseId, nextCaseId, onOpenMaestroDetail }) => {
+const CaseDetailHeader: React.FC<Props> = ({ detail, prevCaseId, nextCaseId }) => {
   const navigate = useNavigate();
   const adminUrl = String(detail?.adminUrl || '').trim();
 
@@ -38,20 +37,12 @@ const CaseDetailHeader: React.FC<Props> = ({ detail, prevCaseId, nextCaseId, onO
             }}
           >
             <Shield size={14} className="inline" />
-            Admin
+            Admin (Accès au back-end UiPath)
           </button>
         </h1>
       </div>
 
       <div className="flex items-center gap-2">
-        <button
-          onClick={onOpenMaestroDetail}
-          className="px-7 py-1.5 rounded-xl border border-teal-700 bg-teal-700 text-white hover:bg-teal-800 transition-colors flex items-center gap-2"
-          style={{ paddingLeft: '26px', paddingRight: '26px' }}
-        >
-          <ExternalLink size={15} />
-          Detail
-        </button>
         <button
           onClick={() => prevCaseId && navigate(`/cases/${prevCaseId}`)}
           disabled={!prevCaseId}

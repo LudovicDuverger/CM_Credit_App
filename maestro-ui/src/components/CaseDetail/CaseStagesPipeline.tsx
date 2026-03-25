@@ -18,13 +18,16 @@ const CaseStagesPipeline: React.FC<Props> = ({ primaryStages, inProgressSecondar
           const dotClass = isDone
             ? 'bg-emerald-600 text-white'
             : isCurrent
-              ? 'bg-cyan-600 text-white'
+              ? 'text-white'
               : 'bg-slate-300 text-slate-700';
 
           return (
             <div key={stage.id} className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${dotClass}`}>
+                <span
+                  className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${dotClass}`}
+                  style={isCurrent ? { background: '#ee7728' } : undefined}
+                >
                   {isDone ? '✓' : ''}
                 </span>
                 <div className="max-w-[90px]">
@@ -43,7 +46,7 @@ const CaseStagesPipeline: React.FC<Props> = ({ primaryStages, inProgressSecondar
       <div className="mt-3 space-y-2">
         {inProgressSecondaryStages.map((stage) => (
           <div key={stage.id} className="flex items-start gap-2">
-            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-cyan-600 mt-0.5 shrink-0" />
+            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full mt-0.5 shrink-0" style={{ background: '#ee7728' }} />
             <div>
               <p className="text-slate-900 font-semibold text-xs leading-tight">{stage.name || '-'}</p>
               <p className="text-[11px] text-slate-500 leading-tight">{translateStatus(stage.status || 'InProgress')}</p>
