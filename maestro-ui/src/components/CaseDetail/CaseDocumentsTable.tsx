@@ -10,7 +10,7 @@ interface Props {
 
 const CaseDocumentsTable: React.FC<Props> = ({ documents, onOpenDocument, openingDocId }) => (
   <section className="rounded-2xl border border-slate-200 bg-white p-6">
-    <h3 className="font-semibold text-slate-900 mb-4">Documents</h3>
+    <h3 className="mb-5 font-semibold text-slate-900">Documents</h3>
     {!documents?.length ? (
       <p className="text-slate-500 text-sm">Aucun document rattaché.</p>
     ) : (

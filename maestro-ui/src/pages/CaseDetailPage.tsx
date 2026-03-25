@@ -232,7 +232,7 @@ const CaseDetailPage: React.FC = () => {
         <button
           onClick={handleRefresh}
           disabled={refreshing}
-          className="ml-4 px-4 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 flex items-center gap-2 shadow-sm"
+          className="ml-4 inline-flex min-h-12 min-w-[160px] items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-slate-700 shadow-sm hover:bg-slate-100"
           title="Rafraîchir les données du dossier"
         >
           <Loader2 size={16} className={refreshing ? 'animate-spin' : ''} />

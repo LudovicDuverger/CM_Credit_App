@@ -21,9 +21,10 @@ interface Props {
 
 const CaseChronology: React.FC<Props> = ({ events }) => (
   <section className="rounded-2xl border border-slate-200 bg-white p-6 flex flex-col flex-1">
-    <h3 className="font-semibold text-slate-900 mb-4">Chronologie</h3>
+    <h3 className="font-semibold text-slate-900">Chronologie</h3>
+    <div className="h-4" aria-hidden="true" />
     {!events.length ? (
-      <p className="text-slate-500 text-sm">Aucun historique de tâche disponible.</p>
+      <p className="text-sm text-slate-500">Aucun historique de tâche disponible.</p>
     ) : (
       <div className="space-y-2">
         {events.map((event, index) => {
