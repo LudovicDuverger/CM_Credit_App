@@ -39,6 +39,8 @@ const formatDate = (value?: string) => {
   }).format(date);
 };
 
+const hasDirectTaskLink = (item: CaseListItem) => item.currentActivityType === 'AppTask' && Boolean(item.currentTaskId);
+
 const SubmissionsPage: React.FC = () => {
   const navigate = useNavigate();
   const [cases, setCases] = useState<CaseListItem[]>([]);
@@ -235,19 +237,35 @@ const SubmissionsPage: React.FC = () => {
               <tbody>
                 {filteredCases.map((row) => (
                   <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors duration-200">
-                    <td className="py-1.5 px-4 font-semibold text-[#1b0d5b] leading-tight">{row.caseId || row.id}</td>
+                    <td className="py-1.5 px-4 font-semibold text-[#1b0d5b] leading-tight">
+                      <button
+                        className="hover:underline underline-offset-2"
+                        onClick={() => navigate(`/cases/${row.id}`)}
+                      >
+                        {row.caseId || row.id}
+                      </button>
+                    </td>
                     <td className="py-1.5 px-4 text-slate-700 leading-tight">{row.clientName || '-'}</td>
                     <td className="py-1.5 px-4 text-slate-700 leading-tight">{row.creditType || '-'}</td>
                     <td className="py-1.5 px-4 text-slate-900 font-semibold leading-tight">{formatAmount(row.requestedAmount)}</td>
                     <td className="py-1.5 px-4 leading-tight">
-                      <span className={`text-sm font-normal leading-tight ${row.currentActivityType === 'AppTask' ? 'text-orange-600' : 'text-slate-700'}`}>
-                        {row.currentActivityLabel || row.dossierStatus || row.status || '-'}
-                      </span>
+                      {hasDirectTaskLink(row) ? (
+                        <button
+                          className="text-sm font-normal leading-tight text-orange-600 hover:underline underline-offset-2"
+                          onClick={() => navigate(`/cases/${row.id}/tasks/${row.currentTaskId}`)}
+                        >
+                          {row.currentActivityLabel || row.dossierStatus || row.status || '-'}
+                        </button>
+                      ) : (
+                        <span className="text-sm font-normal leading-tight text-slate-700">
+                          {row.currentActivityLabel || row.dossierStatus || row.status || '-'}
+                        </span>
+                      )}
                     </td>
                     <td className="py-1.5 px-4 text-slate-500 text-sm leading-tight">{formatDate(row.createdTime)}</td>
                     <td className="py-1.5 px-4 leading-tight">
                       <button
-                        className="text-cyan-600 hover:text-cyan-500 font-semibold text-sm leading-none"
+                        className="text-cyan-600 hover:text-cyan-500 hover:underline underline-offset-2 font-semibold text-sm leading-none"
                         onClick={() => navigate(`/cases/${row.id}`)}
                       >
                         Ouvrir

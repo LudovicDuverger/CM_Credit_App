@@ -11,6 +11,7 @@ export interface CaseListItem {
   dossierStatus?: string;
   currentActivityLabel?: string;
   currentActivityType?: string;
+  currentTaskId?: string;
   createdTime?: string;
   slaStatus?: string;
 }

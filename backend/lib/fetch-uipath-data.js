@@ -66,6 +66,12 @@ const pickCurrentActivityType = (context) => {
   return currentTask?.type || '';
 };
 
+const pickCurrentTaskId = (context) => {
+  const normalizedTasks = (context.tasks || []).map((task) => mapTaskLikeObject(task));
+  const currentTask = normalizedTasks.find((task) => isCurrentTaskStatus(task.status, task.taskState) && !isCompletedTaskStatus(task.status, task.taskState));
+  return currentTask?.id || '';
+};
+
 export const fetchUiPathData = async (token) => {
   const [processesResponse, instancesResponse, entitiesResponse] = await Promise.all([
     uiPathJsonRequest(token, 'pims_/api/v1/processes/summary', { processType: 'CaseManagement' }),
@@ -180,6 +186,7 @@ export const fetchUiPathData = async (token) => {
       '-',
     currentActivityLabel: pickCurrentActivityLabel(context),
     currentActivityType: pickCurrentActivityType(context),
+    currentTaskId: pickCurrentTaskId(context),
     createdTime:
       cleanPlaceholder(getStringField(context.mainCaseRecord || {}, ['CreateTime', 'CreatedAt', 'CreationTime', 'UpdateTime'])) ||
       cleanPlaceholder(findValueByKeyTokens(context.mainCaseRecord || {}, ['createtime', 'createdat', 'creationtime'])) ||
