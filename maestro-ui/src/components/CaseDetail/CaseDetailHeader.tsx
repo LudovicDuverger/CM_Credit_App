@@ -1,16 +1,13 @@
 import React from 'react';
-import { ArrowLeft, ChevronRight } from 'lucide-react';
-import { Shield } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { CaseDetail } from '../../services/cases';
 
 interface Props {
   detail: CaseDetail;
-  prevCaseId?: string;
-  nextCaseId?: string;
 }
 
-const CaseDetailHeader: React.FC<Props> = ({ detail, prevCaseId, nextCaseId }) => {
+const CaseDetailHeader: React.FC<Props> = ({ detail }) => {
   const navigate = useNavigate();
   const adminUrl = String(detail?.adminUrl || '').trim();
 
@@ -19,7 +16,8 @@ const CaseDetailHeader: React.FC<Props> = ({ detail, prevCaseId, nextCaseId }) =
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate('/submissions')}
-          className="inline-flex min-h-12 min-w-[160px] items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-slate-700 hover:bg-slate-50"
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-1.5 text-slate-700 hover:bg-slate-50"
+          style={{ paddingLeft: '16px', paddingRight: '16px' }}
         >
           <ArrowLeft size={16} />
           Retour liste
@@ -29,37 +27,19 @@ const CaseDetailHeader: React.FC<Props> = ({ detail, prevCaseId, nextCaseId }) =
           <button
             type="button"
             title="Ouvrir la fiche Admin UiPath"
-            className="ml-2 px-2 py-1 rounded-lg border border-amber-400 bg-amber-50 text-amber-700 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50 flex items-center gap-1 text-xs font-semibold"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-400 bg-amber-50 py-1.5 text-sm font-semibold text-amber-700 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+            style={{ paddingLeft: '16px', paddingRight: '16px' }}
             disabled={!adminUrl}
             onClick={() => {
               if (!adminUrl) return;
               window.open(adminUrl, 'admin_popup', 'width=1200,height=900,noopener');
             }}
           >
-            <Shield size={14} className="inline" />
-            Admin
+            <Shield size={14} />
+            UiPath Case Management (Admin)
+            <ExternalLink size={14} />
           </button>
         </h1>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => prevCaseId && navigate(`/cases/${prevCaseId}`)}
-          disabled={!prevCaseId}
-          className="inline-flex min-h-12 min-w-[150px] items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-9 py-3 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-          style={{ paddingLeft: '26px', paddingRight: '26px' }}
-        >
-          Précédent
-        </button>
-        <button
-          onClick={() => nextCaseId && navigate(`/cases/${nextCaseId}`)}
-          disabled={!nextCaseId}
-          className="inline-flex min-h-12 min-w-[150px] items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-9 py-3 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-          style={{ paddingLeft: '26px', paddingRight: '26px' }}
-        >
-          Suivant
-          <ChevronRight size={16} />
-        </button>
       </div>
     </div>
   );

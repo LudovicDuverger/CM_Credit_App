@@ -31,6 +31,7 @@ CM_Credit_App/
 |   |   |-- system.js
 |   |   |-- cases.js
 |   |   |-- documents.js
+|   |   |-- tasks.js
 |   |   |-- loan-requests.js
 |   |   `-- oauth.js
 |   |-- lib/
@@ -80,6 +81,7 @@ The main active routes are:
 - `/dashboard`
 - `/submissions`
 - `/cases/:id`
+- `/cases/:id/tasks/:taskId`
 - `/new-request`
 
 Several dashboard-style pages are still demo-oriented, but they are part of the active UI shell.
@@ -160,6 +162,15 @@ Document streaming endpoint:
 - `GET /api/documents/:recordId`
 
 This endpoint retrieves attachments from UiPath Data Fabric and streams them back to the frontend.
+
+### `backend/routes/tasks.js`
+
+In-app task validation endpoints (UiPath mode only — returns 400 in mock mode):
+
+- `GET /api/tasks/:taskId` — fetches raw task details from UiPath Orchestrator
+- `GET /api/tasks/:taskId/form` — fetches the task form definition and current input data
+- `POST /api/tasks/:taskId/assign-self` — assigns the task to the authenticated user (derived from the JWT bearer token); silently skips if the task is already assigned or no user identity is resolved
+- `POST /api/tasks/:taskId/complete` — completes the task with a required `action` string and a `data` object; handles both `AppTask` and `FormTask` types via different UiPath completion paths
 
 ### `backend/routes/loan-requests.js`
 
@@ -257,8 +268,37 @@ Implements backend API access for:
 
 - case list retrieval
 - case detail retrieval
+- document upload (multipart)
+- document deletion
 
 It also attaches the stored bearer token when present.
+
+### `maestro-ui/src/services/tasks.ts`
+
+Implements backend API access for in-app task validation:
+
+- `getTask(taskId)` — retrieves task metadata (status, type, priority, assignee)
+- `getTaskForm(taskId)` — retrieves the form definition and current data payload
+- `assignTaskToSelf(taskId)` — silently assigns the task to the current user on page load
+- `completeTask(taskId, { action, data })` — submits the task completion with the chosen action and output data
+
+The Bearer token is forwarded from local storage (UiPath token preferred over generic auth token).
+
+### `maestro-ui/src/pages/TaskDetailPage.tsx`
+
+Full-page task validation workspace, accessible at `/cases/:id/tasks/:taskId`.
+
+On load it:
+
+- auto-assigns the task to the current user
+- fetches task metadata, form data, and the parent case detail in parallel
+
+It renders two layouts depending on the task title:
+
+- **Completeness task**: document gallery with upload/delete capability and three decision buttons
+- **Other tasks**: read-only form data view with a comment field and two action buttons
+
+The page uses the `DocumentViewer` component for in-page document preview and the `DocumentPreviewCard` sub-component for thumbnail display.
 
 ### `maestro-ui/src/hooks/useCaseDetail.ts`
 
@@ -325,7 +365,19 @@ Shared formatting and display helpers:
 3. Backend fetches the attachment from UiPath Data Fabric
 4. Frontend displays the downloaded blob in the viewer
 
-### 5. Loan Request Creation Flow
+### 5. In-App Task Validation Flow
+
+1. User navigates to a task from the case detail page (`/cases/:id/tasks/:taskId`)
+2. Frontend automatically calls `POST /api/tasks/:taskId/assign-self` to assign the task to the current user
+3. Frontend fetches task metadata and form data in parallel (`GET /api/tasks/:taskId` and `GET /api/tasks/:taskId/form`)
+4. If a case id is present, frontend also loads the case detail to display associated documents
+5. The page renders differently depending on the task type:
+   - **Completeness task** (`vérification complétude dossier crédit`): shows case documents with upload/delete actions and decision buttons (`AnalyzeCompleteness`, `NotifyClient`, `RejectCase`)
+   - **Other tasks**: shows form input data in read-only mode with a comment field and action buttons (`Submit`, hold action)
+6. On decision, frontend calls `POST /api/tasks/:taskId/complete` with the chosen `action` and the existing form `data`
+7. On success, frontend redirects back to the parent case page
+
+### 6. Loan Request Creation Flow
 
 1. User fills the form on `/new-request`
 2. Frontend submits multipart form data to `POST /api/loan-requests`

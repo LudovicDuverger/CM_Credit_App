@@ -224,15 +224,12 @@ const CaseDetailPage: React.FC = () => {
       )}
 
       <div className="flex items-center justify-between">
-        <CaseDetailHeader
-          detail={detail}
-          prevCaseId={prevCaseId}
-          nextCaseId={nextCaseId}
-        />
+        <CaseDetailHeader detail={detail} />
         <button
           onClick={handleRefresh}
           disabled={refreshing}
-          className="ml-4 inline-flex min-h-12 min-w-[160px] items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-slate-700 shadow-sm hover:bg-slate-100"
+          className="ml-4 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white py-1.5 text-slate-700 shadow-sm hover:bg-slate-100"
+          style={{ paddingLeft: '16px', paddingRight: '16px' }}
           title="Rafraîchir les données du dossier"
         >
           <Loader2 size={16} className={refreshing ? 'animate-spin' : ''} />

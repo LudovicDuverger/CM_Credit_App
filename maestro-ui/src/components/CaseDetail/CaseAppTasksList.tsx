@@ -1,5 +1,5 @@
 import React from 'react';
-import { ExternalLink, User } from 'lucide-react';
+import { User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { CaseTask } from '../../services/cases';
 import {
@@ -45,7 +45,6 @@ const CaseAppTasksList: React.FC<Props> = ({ caseId, tasks }) => {
                         className="inline-flex items-center gap-1 text-cyan-700 text-sm font-semibold underline hover:text-cyan-900"
                       >
                         {task.name || '-'}
-                        <ExternalLink size={14} />
                       </Link>
                     ) : isRunning ? (
                       <Link
@@ -53,7 +52,6 @@ const CaseAppTasksList: React.FC<Props> = ({ caseId, tasks }) => {
                         className="inline-flex items-center gap-1 text-cyan-700 text-sm font-semibold underline hover:text-cyan-900"
                       >
                         {task.name || '-'}
-                        <ExternalLink size={14} />
                       </Link>
                     ) : (
                       <span className="text-slate-900 text-sm font-semibold">{task.name || '-'}</span>

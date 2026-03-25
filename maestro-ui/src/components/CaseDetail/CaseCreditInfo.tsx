@@ -9,7 +9,7 @@ interface Props {
 const CaseCreditInfo: React.FC<Props> = ({ credit }) => (
   <section className="rounded-2xl border border-slate-200 bg-white p-6">
     <h3 className="compact-info-title font-semibold text-slate-900">Crédit</h3>
-    <div className="compact-info-grid grid grid-cols-1 md:grid-cols-2 text-sm text-slate-700">
+    <div className="compact-info-grid grid grid-cols-1 md:grid-cols-2 gap-y-3 text-sm text-slate-700">
       <div><span className="font-semibold">Type:</span> {credit?.creditType || '-'}</div>
       <div><span className="font-semibold">Montant:</span> {formatAmount(credit?.requestedAmount)}</div>
       <div><span className="font-semibold">Durée:</span> {credit?.duration || '-'} mois</div>
