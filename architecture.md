@@ -371,11 +371,34 @@ Shared formatting and display helpers:
 2. Frontend automatically calls `POST /api/tasks/:taskId/assign-self` to assign the task to the current user
 3. Frontend fetches task metadata and form data in parallel (`GET /api/tasks/:taskId` and `GET /api/tasks/:taskId/form`)
 4. If a case id is present, frontend also loads the case detail to display associated documents
-5. The page renders differently depending on the task type:
-   - **Completeness task** (`vérification complétude dossier crédit`): shows case documents with upload/delete actions and decision buttons (`AnalyzeCompleteness`, `NotifyClient`, `RejectCase`)
-   - **Other tasks**: shows form input data in read-only mode with a comment field and action buttons (`Submit`, hold action)
-6. On decision, frontend calls `POST /api/tasks/:taskId/complete` with the chosen `action` and the existing form `data`
+5. `TaskDetailPage` acts as a dispatcher: it compares the task title (lowercased) to the constant
+   `'vérification complétude dossier crédit'` and renders either `CompletenessTaskPage` or
+   `InsuranceDelegationPage`. Shared data-fetching logic lives in the `useTaskData` hook
+   (`maestro-ui/src/hooks/useTaskData.ts`).
+   - **`CompletenessTaskPage`**: shows case documents with upload/delete actions and decision buttons
+     (`AnalyzeCompleteness`, `NotifyClient`, `RejectCase`). Also renders the **Analyse agent** section
+     when the task form contains an `AgentAnalysis` field (see subsection below).
+   - **`InsuranceDelegationPage`**: shows form input data in read-only mode, a comment field,
+     and action buttons (`Submit`, hold action).
+6. On decision, frontend calls `POST /api/tasks/:taskId/complete` with the chosen `action` and the
+   existing form `data` (unchanged, including `AgentAnalysis` when present)
 7. On success, frontend redirects back to the parent case page
+
+#### AgentAnalysis field — precise data flow
+
+The `AgentAnalysis` field contains an AI-generated analysis of the loan application's document
+completeness. It is produced by an **upstream UiPath RPA process** before the task is created;
+this backend never generates or modifies it.
+
+| Step | Who | What |
+|------|-----|------|
+| 1 | UiPath Orchestrator | Executes the `CRD_CM_Credit_MainProcess` workflow. An automated step (Robot / AI Center) analyses the submitted documents and writes the result into the UiPath task object as the `AgentAnalysis` property. |
+| 2 | Browser | User opens `/cases/:id/tasks/:taskId`. |
+| 3 | `maestro-ui/src/services/tasks.ts` | `tasksService.getTaskForm(taskId)` calls `GET /api/tasks/:taskId/form`. |
+| 4 | `backend/routes/tasks.js` | Proxies to `GET {UIPATH_BASE_URL}/forms/TaskForms/GetTaskFormById?taskId=:taskId` with the UiPath Bearer token. **No transformation** — returns the raw UiPath response. |
+| 5 | UiPath Forms service | Returns a `TaskFormResponse` whose `data` object (a free-form dict set by the RPA process) contains `data.AgentAnalysis` with the analysis text (may be plain text or HTML). |
+| 6 | `CompletenessTaskPage` | Extracts `taskForm?.data?.AgentAnalysis` and renders it read-only in the cyan "Analyse agent" box. |
+| 7 | On completion | `POST /api/tasks/:taskId/complete` sends back `data: taskForm.data` **unchanged** so UiPath can persist the full form state including `AgentAnalysis`. |
 
 ### 6. Loan Request Creation Flow
 
