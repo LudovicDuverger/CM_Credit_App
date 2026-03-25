@@ -322,7 +322,7 @@ const TaskDetailPage: React.FC = () => {
         <button
           type="button"
           onClick={handleReturnToCase}
-          className="w-fit px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50"
+          className="inline-flex min-h-12 min-w-[170px] items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-3 text-slate-700 hover:bg-slate-50"
         >
           Retour au dossier
         </button>
@@ -344,7 +344,7 @@ const TaskDetailPage: React.FC = () => {
         <button
           type="button"
           onClick={handleReturnToCase}
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50"
+          className="inline-flex min-h-12 min-w-[170px] items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-slate-700 hover:bg-slate-50"
         >
           <ArrowLeft size={16} />
           Retour au dossier
@@ -365,7 +365,7 @@ const TaskDetailPage: React.FC = () => {
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900">Documents du dossier</h2>
                 </div>
-                <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                <label className="inline-flex min-h-12 min-w-[220px] cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
                   {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
                   {uploading ? 'Téléversement...' : 'Uploader des documents'}
                   <input type="file" multiple className="hidden" onChange={handleUploadDocument} disabled={uploading} />
@@ -427,7 +427,7 @@ const TaskDetailPage: React.FC = () => {
                   type="button"
                   onClick={() => handleComplete('AnalyzeCompleteness')}
                   disabled={submitting}
-                  className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl border border-cyan-700 bg-cyan-700 px-4 py-4 text-sm font-semibold text-white hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl border border-cyan-700 bg-cyan-700 px-6 py-4 text-sm font-semibold text-white hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting ? <Loader2 size={16} className="animate-spin" /> : null}
                   Réévaluer le dossier
@@ -436,7 +436,7 @@ const TaskDetailPage: React.FC = () => {
                   type="button"
                   onClick={() => handleComplete('NotifyClient')}
                   disabled={submitting}
-                  className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl border border-amber-600 bg-amber-500 px-4 py-4 text-sm font-semibold text-white hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl border border-amber-600 bg-amber-500 px-6 py-4 text-sm font-semibold text-white hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting ? <Loader2 size={16} className="animate-spin" /> : null}
                   Notifier le client
@@ -445,7 +445,7 @@ const TaskDetailPage: React.FC = () => {
                   type="button"
                   onClick={() => handleComplete('RejectCase')}
                   disabled={submitting}
-                  className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl border border-rose-700 bg-rose-700 px-4 py-4 text-sm font-semibold text-white hover:bg-rose-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl border border-rose-700 bg-rose-700 px-6 py-4 text-sm font-semibold text-white hover:bg-rose-800 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting ? <Loader2 size={16} className="animate-spin" /> : null}
                   Clôturer le cas
@@ -474,7 +474,7 @@ const TaskDetailPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleReturnToCase}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   Mise en attente nouvelle assurance client
                 </button>
@@ -482,7 +482,7 @@ const TaskDetailPage: React.FC = () => {
                   type="button"
                   onClick={() => handleComplete('Submit')}
                   disabled={submitting}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-teal-700 bg-teal-700 px-4 py-3 text-sm font-semibold text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-teal-700 bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting ? <Loader2 size={16} className="animate-spin" /> : null}
                   Offre UiBank acceptée

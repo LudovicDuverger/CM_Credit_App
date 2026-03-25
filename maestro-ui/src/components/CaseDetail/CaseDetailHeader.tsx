@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, ChevronRight, ExternalLink } from 'lucide-react';
+import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { CaseDetail } from '../../services/cases';
@@ -8,10 +8,9 @@ interface Props {
   detail: CaseDetail;
   prevCaseId?: string;
   nextCaseId?: string;
-  onOpenMaestroDetail: () => void;
 }
 
-const CaseDetailHeader: React.FC<Props> = ({ detail, prevCaseId, nextCaseId, onOpenMaestroDetail }) => {
+const CaseDetailHeader: React.FC<Props> = ({ detail, prevCaseId, nextCaseId }) => {
   const navigate = useNavigate();
   const adminUrl = String(detail?.adminUrl || '').trim();
 
@@ -20,7 +19,7 @@ const CaseDetailHeader: React.FC<Props> = ({ detail, prevCaseId, nextCaseId, onO
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate('/submissions')}
-          className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex items-center gap-2"
+          className="inline-flex min-h-12 min-w-[160px] items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-slate-700 hover:bg-slate-50"
         >
           <ArrowLeft size={16} />
           Retour liste
@@ -45,17 +44,9 @@ const CaseDetailHeader: React.FC<Props> = ({ detail, prevCaseId, nextCaseId, onO
 
       <div className="flex items-center gap-2">
         <button
-          onClick={onOpenMaestroDetail}
-          className="px-7 py-1.5 rounded-xl border border-teal-700 bg-teal-700 text-white hover:bg-teal-800 transition-colors flex items-center gap-2"
-          style={{ paddingLeft: '26px', paddingRight: '26px' }}
-        >
-          <ExternalLink size={15} />
-          Detail
-        </button>
-        <button
           onClick={() => prevCaseId && navigate(`/cases/${prevCaseId}`)}
           disabled={!prevCaseId}
-          className="px-8 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+          className="inline-flex min-h-12 min-w-[150px] items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-9 py-3 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
           style={{ paddingLeft: '26px', paddingRight: '26px' }}
         >
           Précédent
@@ -63,7 +54,7 @@ const CaseDetailHeader: React.FC<Props> = ({ detail, prevCaseId, nextCaseId, onO
         <button
           onClick={() => nextCaseId && navigate(`/cases/${nextCaseId}`)}
           disabled={!nextCaseId}
-          className="px-8 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+          className="inline-flex min-h-12 min-w-[150px] items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-9 py-3 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
           style={{ paddingLeft: '26px', paddingRight: '26px' }}
         >
           Suivant
