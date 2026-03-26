@@ -10,7 +10,17 @@ const fieldLabels: Record<string, string> = {
   CommercialOfferMoreAdvantageous: 'Offre UiBank est meilleure (Y/N)',
 };
 
-const unlabeledFields = new Set(['RemediationAgentAnalysisResult', 'CommercialArgument']);
+const unlabeledFields = new Set(['HtmlAgentAnalysis', 'AgentAnalysis', 'RemediationAgentAnalysisResult', 'AnalysisResult', 'CommercialArgument']);
+const hiddenFieldKeys = new Set(['CustomerOfferCompliant', 'CommercialOfferMoreAdvantageous']);
+
+const InsightCard: React.FC<{ title: string; value: unknown }> = ({ title, value }) => (
+  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <h2 className="text-base font-semibold text-slate-900">{title}</h2>
+    <div className="mt-4">
+      <ReadOnlyField label="" value={value} />
+    </div>
+  </div>
+);
 
 const InsuranceDelegationPage: React.FC<TaskDataProps> = ({
   caseId,
@@ -25,9 +35,22 @@ const InsuranceDelegationPage: React.FC<TaskDataProps> = ({
 }) => {
   const [comment, setComment] = useState('');
 
+  const taskData = taskForm?.data || {};
   const inputEntries = useMemo(
-    () => Object.entries(taskForm?.data || {}),
-    [taskForm],
+    () => Object.entries(taskData).filter(([key]) => !hiddenFieldKeys.has(key)),
+    [taskData],
+  );
+  const delegationAgentAnalysis =
+    taskData.HtmlAgentAnalysis
+    ?? taskData.AgentAnalysis
+    ?? taskData.RemediationAgentAnalysisResult
+    ?? taskData.AnalysisResult
+    ?? taskData.analysisResult;
+  const commercialArgument = taskData.CommercialArgument;
+  const commercialOfferMoreAdvantageous = taskData.CommercialOfferMoreAdvantageous;
+  const filteredInputEntries = useMemo(
+    () => inputEntries.filter(([key]) => !['HtmlAgentAnalysis', 'AgentAnalysis', 'RemediationAgentAnalysisResult', 'AnalysisResult', 'analysisResult', 'CommercialArgument'].includes(key)),
+    [inputEntries],
   );
 
   return (
@@ -57,13 +80,31 @@ const InsuranceDelegationPage: React.FC<TaskDataProps> = ({
         </div>
       ) : null}
 
-      <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="mt-6 grid grid-cols-1 gap-6">
         <section className="rounded-2xl border border-slate-200 bg-white p-6">
-          {!inputEntries.length ? (
-            <p className="text-sm text-slate-500">Aucune donnée disponible pour cette tâche.</p>
-          ) : (
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+            {delegationAgentAnalysis ? (
+              <InsightCard title="HtmlAgentAnalysis" value={delegationAgentAnalysis} />
+            ) : (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-500">
+                Aucune analyse agent disponible.
+              </div>
+            )}
+            {(commercialArgument || commercialOfferMoreAdvantageous !== undefined) ? (
+              <InsightCard
+                title="Avantage UiAssur"
+                value={commercialArgument || (commercialOfferMoreAdvantageous ? 'L’offre UiAssur est plus avantageuse.' : 'L’offre UiAssur n’est pas plus avantageuse.')}
+              />
+            ) : (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-500">
+                Aucun avantage UiAssur disponible.
+              </div>
+            )}
+          </div>
+
+          {filteredInputEntries.length ? (
             <div className="grid grid-cols-1 gap-4">
-              {inputEntries.map(([key, value]) => (
+              {filteredInputEntries.map(([key, value]) => (
                 <ReadOnlyField
                   key={key}
                   label={unlabeledFields.has(key) ? '' : (fieldLabels[key] || key)}
@@ -71,15 +112,11 @@ const InsuranceDelegationPage: React.FC<TaskDataProps> = ({
                 />
               ))}
             </div>
-          )}
+          ) : null}
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 h-fit">
-          <p className="mt-2 text-sm text-slate-500">
-            Les données d&apos;entrée sont affichées en lecture seule. Le commentaire est conservé à l&apos;écran pour la saisie, mais n&apos;est pas encore transmis à UiPath tant qu&apos;une route de commentaire dédiée n&apos;est pas branchée.
-          </p>
-
-          <label className="mt-5 block text-sm font-medium text-slate-700" htmlFor="task-comment">
+        <section className="rounded-2xl border border-slate-200 bg-white p-6">
+          <label className="block text-sm font-medium text-slate-700" htmlFor="task-comment">
             Commentaire
           </label>
           <textarea

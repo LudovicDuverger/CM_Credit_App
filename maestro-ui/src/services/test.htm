@@ -1,0 +1,116 @@
+<style>
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: #f4f6f9;
+        margin: 0;
+        padding: 40px;
+        color: #333;
+    }
+    .container {
+        max-width: 800px;
+        margin: auto;
+    }
+    .card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    h1 {
+        font-size: 22px;
+        margin-bottom: 10px;
+    }
+    h2 {
+        font-size: 18px;
+        margin-bottom: 15px;
+        color: #555;
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+    li {
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    .ok {
+        background-color: #e8f5e9;
+        border-left: 4px solid #4caf50;
+    }
+    .ko {
+        background-color: #fdecea;
+        border-left: 4px solid #e53935;
+        color: #b71c1c;
+    }
+    .title {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 4px;
+    }
+    .desc {
+        font-size: 14px;
+        color: #555;
+    }
+    .ko .desc {
+        color: #b71c1c;
+    }
+   .conclusion {
+        font-size: 16px;
+        font-weight: bold;
+        padding: 16px;
+        border-radius: 10px;
+        text-align: center;
+    }
+    .non-compliant {
+        background-color: #fdecea;
+        color: #c62828;
+    }
+</style>
+
+
+<div class="container">
+    <div class="card">
+        <h1>🛡️ Analyse de l'Agent IA </h1>
+        <p>Assurance proposée par le client — Résumé de conformité</p>
+    </div>
+    <div class="card">
+        <h2>Clauses conformes</h2>
+        <ul>
+            <li class="ok">
+                <span class="title">Garantie Décès</span>
+                <span class="desc">Couverture à 100 % du capital restant dû, conforme à la politique.</span>
+            </li>
+            <li class="ok">
+                <span class="title">Garantie PTIA</span>
+                <span class="desc">Couverture à 100 % du capital restant dû, conforme à la politique.</span>
+            </li>
+            <li class="ok">
+                <span class="title">Quotité</span>
+                <span class="desc">Assurée à 100 %, conforme aux exigences.</span>
+            </li>
+        </ul>
+    </div>
+    <div class="card">
+        <h2>Clauses non conformes</h2>
+        <ul>
+            <li class="ko">
+                <span class="title">Franchise ITT</span>
+                <span class="desc">120 jours — dépasse la limite autorisée de 90 jours.</span>
+            </li>
+            <li class="ko">
+                <span class="title">Garantie IPT</span>
+                <span class="desc">Seuil strictement supérieur à 66 % — non conforme au seuil requis.</span>
+            </li>
+            <li class="ko">
+                <span class="title">Absence de garantie IPP</span>
+                <span class="desc">Couverture manquante dès 33 % d’invalidité.</span>
+            </li>
+            <li class="ko">
+                <span class="title">Exclusions contractuelles</span>
+                <span class="desc">Restrictions sur affections dorsales et psychiatriques non conformes.</span>
+            </li>
+        </ul>
+    </div>
+</div>

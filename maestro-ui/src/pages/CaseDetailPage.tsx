@@ -27,16 +27,12 @@ const CaseDetailPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [refreshKey, setRefreshKey] = useState(0);
-  const { detail, allCases, loading, refreshing, error } = useCaseDetail(id ? `${id}` : undefined, refreshKey);
+  const { detail, loading, refreshing, error } = useCaseDetail(id ? `${id}` : undefined, refreshKey);
   const handleRefresh = useCallback(() => {
     if (refreshing) return;
     setRefreshKey((k) => k + 1);
   }, [refreshing]);
   const { openingDocId, viewerOpen, viewerBlobUrl, viewerFileName, viewerMimeType, openDocument, closeViewer, downloadFromViewer } = useDocumentViewer();
-
-  const currentIndex = useMemo(() => allCases.findIndex((item) => item.id === id), [allCases, id]);
-  const prevCaseId = currentIndex > 0 ? allCases[currentIndex - 1]?.id : undefined;
-  const nextCaseId = currentIndex >= 0 && currentIndex < allCases.length - 1 ? allCases[currentIndex + 1]?.id : undefined;
 
   const flattenedTasks = useMemo(() => {
     const fromStages = (detail?.stages || []).flatMap((stage) =>

@@ -138,7 +138,12 @@ const CompletenessTaskPage: React.FC<TaskDataProps> = ({
   const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
   const { openingDocId, viewerOpen, viewerBlobUrl, viewerFileName, viewerMimeType, openDocument, closeViewer, downloadFromViewer } = useDocumentViewer();
 
-  const agentAnalysis = taskForm?.data?.AgentAnalysis;
+  const agentAnalysis =
+    taskForm?.data?.HtmlAgentAnalysis
+    ?? taskForm?.data?.AgentAnalysis
+    ?? taskForm?.data?.AnalysisResult
+    ?? taskForm?.data?.analysisResult
+    ?? taskForm?.data?.RemediationAgentAnalysisResult;
 
   const handleUploadDocument = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!businessCaseId) return;
