@@ -1,13 +1,12 @@
 import React from 'react';
 import { Bell, Search } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { clearAuthStorage, getAuthenticatedUser } from '../services/oauth';
 
 const TopNav: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const user = getAuthenticatedUser();
-  const portalLabel = (location.pathname === '/submissions' || location.pathname.startsWith('/cases/')) ? 'Portail Analyste Crédit' : 'Portail Conseiller';
+  const portalLabel = 'Portail Conseiller';
   const displayName = user?.name ?? 'Utilisateur';
   const initials = user?.initials ?? 'UT';
 
@@ -61,3 +60,4 @@ const TopNav: React.FC = () => {
 };
 
 export default TopNav;
+
