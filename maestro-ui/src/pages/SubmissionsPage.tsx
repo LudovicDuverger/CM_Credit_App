@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, Clock3, Filter, Search, ShieldCheck } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -74,6 +74,16 @@ const SubmissionsPage: React.FC = () => {
   useEffect(() => {
     loadCases(false);
   }, []);
+
+  const handleRefresh = useCallback(() => {
+    if (refreshing) return;
+    void loadCases(true);
+  }, [refreshing]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const interval = setInterval(handleRefresh, 5000);
+    return () => clearInterval(interval);
+  }, [handleRefresh]);
 
   const filteredCases = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
