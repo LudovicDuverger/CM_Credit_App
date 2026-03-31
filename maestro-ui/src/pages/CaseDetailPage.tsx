@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useCaseDetail } from '../hooks/useCaseDetail';
@@ -32,6 +32,12 @@ const CaseDetailPage: React.FC = () => {
     if (refreshing) return;
     setRefreshKey((k) => k + 1);
   }, [refreshing]);
+
+  useEffect(() => {
+    const interval = setInterval(handleRefresh, 5000);
+    return () => clearInterval(interval);
+  }, [handleRefresh]);
+
   const { openingDocId, viewerOpen, viewerBlobUrl, viewerFileName, viewerMimeType, openDocument, closeViewer, downloadFromViewer } = useDocumentViewer();
 
   const flattenedTasks = useMemo(() => {

@@ -18,7 +18,7 @@ const Sidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  const portalLabel = (location.pathname === '/submissions' || location.pathname.startsWith('/cases/')) ? 'Portail Analyste Crédit' : 'Portail Conseiller';
+  const portalLabel = 'Portail Conseiller';
 
   const navItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
@@ -120,3 +120,4 @@ const Sidebar: React.FC = () => {
 };
 
 export default Sidebar;
+
