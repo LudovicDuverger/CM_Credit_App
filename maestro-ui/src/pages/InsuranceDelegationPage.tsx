@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { formatDate } from '../utils/caseFormatters';
 import { looksLikeHtml, renderPrimitive } from '../components/ReadOnlyField';
 import type { TaskDataProps } from '../hooks/useTaskData';
@@ -34,6 +35,7 @@ const InsuranceDelegationPage: React.FC<TaskDataProps> = ({
   handleComplete,
 }) => {
   const [comment, setComment] = useState('');
+  const { t } = useTranslation();
 
   const taskData = taskForm?.data || {};
   const delegationAgentAnalysis =
@@ -48,10 +50,10 @@ const InsuranceDelegationPage: React.FC<TaskDataProps> = ({
     <div className="detail-page">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">{taskForm?.title || task?.Title || `Tâche ${taskId}`}</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{taskForm?.title || task?.Title || t('taskDetail.defaultTitle', { taskId })}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-600">
-            <span>Dossier: {businessCaseId || caseId || '-'}</span>
-            <span>Créée le {formatDate(task?.CreationTime || taskForm?.creationTime)}</span>
+            <span>{t('taskDetail.caseLabel')} {businessCaseId || caseId || '-'}</span>
+            <span>{t('taskDetail.createdAt')} {formatDate(task?.CreationTime || taskForm?.creationTime)}</span>
           </div>
         </div>
 
@@ -61,7 +63,7 @@ const InsuranceDelegationPage: React.FC<TaskDataProps> = ({
           className="inline-flex min-h-12 min-w-[170px] items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-slate-700 hover:bg-slate-50"
         >
           <ArrowLeft size={16} />
-          Retour au dossier
+          {t('taskDetail.returnToCase')}
         </button>
       </div>
 
@@ -78,14 +80,14 @@ const InsuranceDelegationPage: React.FC<TaskDataProps> = ({
               <InsightCard value={delegationAgentAnalysis} />
             ) : (
               <div className="text-sm text-slate-500">
-                Aucune analyse agent disponible.
+                {t('taskDetail.noAnalysis')}
               </div>
             )}
             {commercialArgument ? (
               <InsightCard value={commercialArgument} />
             ) : (
               <div className="text-sm text-slate-500">
-                Aucun argument commercial disponible.
+                {t('taskDetail.noCommercialArg')}
               </div>
             )}
           </div>
@@ -93,7 +95,7 @@ const InsuranceDelegationPage: React.FC<TaskDataProps> = ({
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 h-fit">
           <label className="block text-sm font-medium text-slate-700" htmlFor="task-comment">
-            Commentaire
+            {t('taskDetail.comment')}
           </label>
           <textarea
             id="task-comment"
@@ -101,7 +103,7 @@ const InsuranceDelegationPage: React.FC<TaskDataProps> = ({
             onChange={(event) => setComment(event.target.value)}
             rows={8}
             className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
-            placeholder="Saisir un commentaire de décision"
+            placeholder={t('taskDetail.commentPlaceholder')}
           />
 
           <div className="mt-5 grid grid-cols-1 gap-3">
@@ -110,7 +112,7 @@ const InsuranceDelegationPage: React.FC<TaskDataProps> = ({
               onClick={handleReturnToCase}
               className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
             >
-              Mise en attente nouvelle assurance client
+              {t('taskDetail.pendingInsurance')}
             </button>
             <button
               type="button"
@@ -119,13 +121,13 @@ const InsuranceDelegationPage: React.FC<TaskDataProps> = ({
               className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-teal-700 bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? <Loader2 size={16} className="animate-spin" /> : null}
-              Offre UiBank acceptée
+              {t('taskDetail.acceptOffer')}
             </button>
           </div>
 
           <div className="mt-4">
             <Link to={caseId ? `/cases/${caseId}` : '/cases'} className="text-sm font-medium text-cyan-700 hover:text-cyan-900">
-              Retour au dossier
+              {t('taskDetail.returnToCase')}
             </Link>
           </div>
         </section>

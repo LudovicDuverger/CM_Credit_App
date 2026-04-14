@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, ExternalLink, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { CaseDetail } from '../../services/cases';
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 
 const CaseDetailHeader: React.FC<Props> = ({ detail }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const adminUrl = String(detail?.adminUrl || '').trim();
 
   return (
@@ -20,13 +22,13 @@ const CaseDetailHeader: React.FC<Props> = ({ detail }) => {
           style={{ paddingLeft: '16px', paddingRight: '16px' }}
         >
           <ArrowLeft size={16} />
-          Retour liste
+          {t('caseDetail.backToList')}
         </button>
         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-          Détail dossier {detail.caseId || detail.id}
+          {t('caseDetail.caseDetailTitle')} {detail.caseId || detail.id}
           <button
             type="button"
-            title="Ouvrir la fiche Admin UiPath"
+            title={t('caseDetail.openAdminTitle')}
             className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-400 bg-amber-50 py-1.5 text-sm font-semibold text-amber-700 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
             style={{ paddingLeft: '16px', paddingRight: '16px' }}
             disabled={!adminUrl}
@@ -36,7 +38,7 @@ const CaseDetailHeader: React.FC<Props> = ({ detail }) => {
             }}
           >
             <Shield size={14} />
-            UiPath Case Management (Admin)
+            {t('caseDetail.adminLink')}
             <ExternalLink size={14} />
           </button>
         </h1>

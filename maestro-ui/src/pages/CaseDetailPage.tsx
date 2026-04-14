@@ -1,6 +1,7 @@
 import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useCaseDetail } from '../hooks/useCaseDetail';
 import { useDocumentViewer } from '../hooks/useDocumentViewer';
 import {
@@ -25,6 +26,7 @@ import DocumentViewer from '../components/CaseDetail/DocumentViewer';
 const CaseDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [refreshKey, setRefreshKey] = useState(0);
   const { detail, loading, refreshing, error } = useCaseDetail(id ? `${id}` : undefined, refreshKey);
@@ -248,10 +250,10 @@ const CaseDetailPage: React.FC = () => {
           disabled={refreshing}
           className="ml-4 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white py-1.5 text-slate-700 shadow-sm hover:bg-slate-100"
           style={{ paddingLeft: '16px', paddingRight: '16px' }}
-          title="Rafraîchir les données du dossier"
+          title={t('caseDetail.refreshTitle')}
         >
           <Loader2 size={16} className={refreshing ? 'animate-spin' : ''} />
-          {refreshing ? 'Actualisation...' : 'Rafraîchir'}
+          {refreshing ? t('caseDetail.refreshing') : t('caseDetail.refresh')}
         </button>
       </div>
 

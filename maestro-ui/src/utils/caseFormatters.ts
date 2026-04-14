@@ -1,3 +1,5 @@
+import i18n from '../i18n/index';
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 const UIPATH_BASE_URL = (import.meta.env.VITE_UIPATH_BASE_URL || 'https://staging.uipath.com').replace(/\/+$/, '');
 const UIPATH_ORG_NAME = import.meta.env.VITE_UIPATH_ORG_NAME || 'france';
@@ -76,22 +78,23 @@ export const translateStatus = (value?: string) => {
   const raw = String(value || '').trim();
   if (!raw) return '-';
   const normalized = raw.toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
-  if (normalized.includes('not started')) return 'Non démarré';
-  if (normalized.includes('at risk')) return 'À risque';
-  if (normalized.includes('on track')) return 'Dans les temps';
-  if (normalized.includes('in progress') || normalized.includes('inprogress')) return 'En cours';
-  if (normalized.includes('completed') || normalized.includes('complete')) return 'Terminé';
-  if (normalized.includes('cancel')) return 'Annulé';
-  if (normalized.includes('overdue') || normalized.includes('late')) return 'En retard';
-  if (normalized.includes('breach')) return 'Dépassé';
-  if (normalized.includes('pending')) return 'En attente';
-  if (normalized.includes('assigned')) return 'Assigné';
-  if (normalized.includes('active')) return 'Actif';
-  if (normalized.includes('running')) return 'En cours';
-  if (normalized.includes('open')) return 'Ouvert';
-  if (normalized.includes('closed')) return 'Clôturé';
-  if (normalized.includes('error') || normalized.includes('fail') || normalized.includes('fault')) return 'En échec';
-  if (normalized === 'unknown') return 'Inconnu';
+  const t = i18n.t.bind(i18n);
+  if (normalized.includes('not started')) return t('status.notStarted');
+  if (normalized.includes('at risk')) return t('status.atRisk');
+  if (normalized.includes('on track')) return t('status.onTrack');
+  if (normalized.includes('in progress') || normalized.includes('inprogress')) return t('status.inProgress');
+  if (normalized.includes('completed') || normalized.includes('complete')) return t('status.completed');
+  if (normalized.includes('cancel')) return t('status.cancelled');
+  if (normalized.includes('overdue') || normalized.includes('late')) return t('status.overdue');
+  if (normalized.includes('breach')) return t('status.breach');
+  if (normalized.includes('pending')) return t('status.pending');
+  if (normalized.includes('assigned')) return t('status.assigned');
+  if (normalized.includes('active')) return t('status.active');
+  if (normalized.includes('running')) return t('status.inProgress');
+  if (normalized.includes('open')) return t('status.open');
+  if (normalized.includes('closed')) return t('status.closed');
+  if (normalized.includes('error') || normalized.includes('fail') || normalized.includes('fault')) return t('status.error');
+  if (normalized === 'unknown') return t('status.unknown');
   return raw;
 };
 

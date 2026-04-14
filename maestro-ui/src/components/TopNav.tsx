@@ -1,12 +1,14 @@
 import React from 'react';
 import { Bell, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { clearAuthStorage, getAuthenticatedUser } from '../services/oauth';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const TopNav: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const user = getAuthenticatedUser();
-  const portalLabel = 'Portail Conseiller';
   const displayName = user?.name ?? 'Utilisateur';
   const initials = user?.initials ?? 'UT';
 
@@ -14,7 +16,7 @@ const TopNav: React.FC = () => {
     <header className="portal-topnav bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
       {/* Left: Title */}
       <div className="portal-topnav-left flex items-center space-x-4">
-        <span className="text-sm text-slate-500 hidden md:block">{portalLabel}</span>
+        <span className="text-sm text-slate-500 hidden md:block">{t('topnav.portalLabel')}</span>
       </div>
 
       {/* Right: Actions */}
@@ -24,10 +26,13 @@ const TopNav: React.FC = () => {
           <Search size={18} className="text-slate-400" />
           <input
             type="text"
-            placeholder="Rechercher un client ou dossier..."
+            placeholder={t('topnav.searchPlaceholder')}
             className="bg-transparent ml-2 flex-1 outline-none text-sm text-slate-900 placeholder-slate-400"
           />
         </div>
+
+        {/* Language Switcher */}
+        <LanguageSwitcher />
 
         {/* Notifications */}
         <button className="relative p-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all duration-250">
@@ -42,7 +47,7 @@ const TopNav: React.FC = () => {
         <div className="portal-topnav-user">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-semibold text-slate-900">{displayName}</p>
-            <p className="text-xs text-slate-500">Conseiller bancaire</p>
+            <p className="text-xs text-slate-500">{t('topnav.role')}</p>
           </div>
           <button
             onClick={() => {
@@ -60,4 +65,3 @@ const TopNav: React.FC = () => {
 };
 
 export default TopNav;
-

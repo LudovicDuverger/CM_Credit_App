@@ -1,10 +1,12 @@
 import React, { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Upload, FileText, AlertCircle, CheckCircle, Trash2, DollarSign, Calendar, User } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
 const LoanRequestPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { t } = useTranslation();
 
   const [formData, setFormData] = useState({
     clientCode: 'CLI-20419',
@@ -95,11 +97,11 @@ const LoanRequestPage: React.FC = () => {
 
     try {
       const missingFields: string[] = [];
-      if (!String(formData.loanPurpose || '').trim()) missingFields.push('objet du prêt');
-      if (!(Number(formData.requestedAmount) > 0)) missingFields.push('montant demandé');
-      if (!formData.acceptSolvabilityStudy) missingFields.push('consentement de solvabilité');
+      if (!String(formData.loanPurpose || '').trim()) missingFields.push(t('loanRequest.loanPurposeField'));
+      if (!(Number(formData.requestedAmount) > 0)) missingFields.push(t('loanRequest.amountField'));
+      if (!formData.acceptSolvabilityStudy) missingFields.push(t('loanRequest.consentField'));
       if (missingFields.length > 0) {
-        throw new Error(`Champs à compléter : ${missingFields.join(', ')}.`);
+        throw new Error(t('loanRequest.missingFieldsError', { fields: missingFields.join(', ') }));
       }
 
       const formDataObj = new FormData();
@@ -122,7 +124,7 @@ const LoanRequestPage: React.FC = () => {
 
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(data?.message || 'Erreur lors de la création de la demande de crédit.');
+        throw new Error(data?.message || t('loanRequest.creationError'));
       }
 
       setSuccess(true);
@@ -131,7 +133,7 @@ const LoanRequestPage: React.FC = () => {
       const failedCount = Array.isArray(data?.failedDocuments) ? data.failedDocuments.length : 0;
       const caseId = data?.caseId || 'N/A';
       setError('');
-      setSuccessMessage(`Dossier ${caseId} créé. Documents: ${uploadedCount} importé(s), ${failedCount} en échec.`);
+      setSuccessMessage(t('loanRequest.successCase', { caseId, uploaded: uploadedCount, failed: failedCount }));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Submission failed');
     } finally {
@@ -143,8 +145,8 @@ const LoanRequestPage: React.FC = () => {
     <div className="loan-form-page">
       {/* Header */}
       <div className="space-y-3">
-        <h1 className="text-3xl font-bold text-slate-900">Nouvelle demande de crédit</h1>
-        <p className="text-slate-600 text-lg">Complétez le formulaire ci-dessous pour soumettre votre demande de crédit</p>
+        <h1 className="text-3xl font-bold text-slate-900">{t('loanRequest.title')}</h1>
+        <p className="text-slate-600 text-lg">{t('loanRequest.subtitle')}</p>
       </div>
 
       {/* Alerts */}
@@ -152,7 +154,7 @@ const LoanRequestPage: React.FC = () => {
         <div className="mb-8 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3 animate-slide-in-up">
           <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-semibold text-red-900">Erreur</p>
+            <p className="font-semibold text-red-900">{t('loanRequest.errorTitle')}</p>
             <p className="text-sm text-red-700">{error}</p>
           </div>
         </div>
@@ -162,8 +164,8 @@ const LoanRequestPage: React.FC = () => {
         <div className="mb-8 bg-green-50 border border-green-200 rounded-lg p-4 flex items-start space-x-3 animate-slide-in-up">
           <CheckCircle size={20} className="text-green-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-semibold text-green-900">Succès !</p>
-            <p className="text-sm text-green-700">{successMessage || 'Demande soumise.'}</p>
+            <p className="font-semibold text-green-900">{t('loanRequest.successTitle')}</p>
+            <p className="text-sm text-green-700">{successMessage || t('loanRequest.successDefault')}</p>
           </div>
         </div>
       )}
@@ -176,33 +178,13 @@ const LoanRequestPage: React.FC = () => {
             <div className="w-11 h-11 bg-brand-100 rounded-lg flex items-center justify-center shrink-0">
               <User size={20} className="text-brand-600" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900">Informations personnelles</h2>
+            <h2 className="text-2xl font-bold text-slate-900">{t('loanRequest.personalInfo')}</h2>
           </div>
 
           <div className="loan-grid">
-            <InputField
-              label="Nom complet"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleInputChange}
-              required
-            />
-            <InputField
-              label="Email"
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-            />
-            <InputField
-              label="Téléphone"
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleInputChange}
-              required
-            />
+            <InputField label={t('loanRequest.fullName')} name="fullName" value={formData.fullName} onChange={handleInputChange} required />
+            <InputField label={t('loanRequest.email')} type="email" name="email" value={formData.email} onChange={handleInputChange} required />
+            <InputField label={t('loanRequest.phone')} type="tel" name="phone" value={formData.phone} onChange={handleInputChange} required />
           </div>
         </div>
 
@@ -212,39 +194,24 @@ const LoanRequestPage: React.FC = () => {
             <div className="w-11 h-11 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
               <DollarSign size={20} className="text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900">Détails du prêt</h2>
+            <h2 className="text-2xl font-bold text-slate-900">{t('loanRequest.loanDetails')}</h2>
           </div>
 
           <div className="loan-grid">
-            <InputField
-              label="Montant demandé (€)"
-              type="number"
-              name="requestedAmount"
-              value={formData.requestedAmount}
-              onChange={handleInputChange}
-              required
-            />
-            <InputField
-              label="Durée (mois)"
-              type="number"
-              name="durationMonths"
-              value={formData.durationMonths}
-              onChange={handleInputChange}
-              required
-            />
+            <InputField label={t('loanRequest.requestedAmount')} type="number" name="requestedAmount" value={formData.requestedAmount} onChange={handleInputChange} required />
+            <InputField label={t('loanRequest.duration')} type="number" name="durationMonths" value={formData.durationMonths} onChange={handleInputChange} required />
             <SelectField
-              label="Type de crédit"
+              label={t('loanRequest.creditType')}
               name="creditType"
               value={formData.creditType}
               onChange={handleInputChange}
-              options={['Prêt personnel', 'Prêt auto', 'Prêt immobilier']}
+              options={[
+                t('loanRequest.creditTypePersonal'),
+                t('loanRequest.creditTypeAuto'),
+                t('loanRequest.creditTypeMortgage'),
+              ]}
             />
-            <InputField
-              label="Objet du prêt"
-              name="loanPurpose"
-              value={formData.loanPurpose}
-              onChange={handleInputChange}
-            />
+            <InputField label={t('loanRequest.loanPurpose')} name="loanPurpose" value={formData.loanPurpose} onChange={handleInputChange} />
           </div>
         </div>
 
@@ -254,38 +221,14 @@ const LoanRequestPage: React.FC = () => {
             <div className="w-11 h-11 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
               <Calendar size={20} className="text-amber-600" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900">Informations financières</h2>
+            <h2 className="text-2xl font-bold text-slate-900">{t('loanRequest.financialInfo')}</h2>
           </div>
 
           <div className="loan-grid">
-            <InputField
-              label="Revenu mensuel net (€)"
-              type="number"
-              name="netIncome"
-              value={formData.netIncome}
-              onChange={handleInputChange}
-              required
-            />
-            <InputField
-              label="Charges mensuelles (€)"
-              type="number"
-              name="monthlyCharges"
-              value={formData.monthlyCharges}
-              onChange={handleInputChange}
-              required
-            />
-            <InputField
-              label="Nom de la banque"
-              name="bankName"
-              value={formData.bankName}
-              onChange={handleInputChange}
-            />
-            <InputField
-              label="IBAN"
-              name="iban"
-              value={formData.iban}
-              onChange={handleInputChange}
-            />
+            <InputField label={t('loanRequest.netIncome')} type="number" name="netIncome" value={formData.netIncome} onChange={handleInputChange} required />
+            <InputField label={t('loanRequest.monthlyCharges')} type="number" name="monthlyCharges" value={formData.monthlyCharges} onChange={handleInputChange} required />
+            <InputField label={t('loanRequest.bankName')} name="bankName" value={formData.bankName} onChange={handleInputChange} />
+            <InputField label={t('loanRequest.iban')} name="iban" value={formData.iban} onChange={handleInputChange} />
           </div>
         </div>
 
@@ -295,13 +238,13 @@ const LoanRequestPage: React.FC = () => {
             <div className="w-11 h-11 bg-purple-100 rounded-lg flex items-center justify-center shrink-0">
               <Upload size={20} className="text-purple-600" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900">Pièces justificatives</h2>
+            <h2 className="text-2xl font-bold text-slate-900">{t('loanRequest.documents')}</h2>
           </div>
 
           <div className="loan-upload-box text-center hover:border-brand-500 transition-colors duration-250 hover:bg-brand-50">
             <Upload size={32} className="mx-auto text-slate-400 mb-3" />
-            <h3 className="text-lg font-semibold text-slate-900 mb-1">Ajouter des documents</h3>
-            <p className="text-slate-600 mb-6">Glissez-déposez ou cliquez pour sélectionner des fichiers</p>
+            <h3 className="text-lg font-semibold text-slate-900 mb-1">{t('loanRequest.addDocuments')}</h3>
+            <p className="text-slate-600 mb-6">{t('loanRequest.dropFiles')}</p>
             <input
               ref={fileInputRef}
               type="file"
@@ -317,7 +260,7 @@ const LoanRequestPage: React.FC = () => {
               className="text-white rounded-xl cursor-pointer hover:shadow-lg hover:opacity-90 transition-all duration-250 inline-block font-semibold"
               style={{ background: 'linear-gradient(135deg, #ee7728 0%, #f19250 100%)', padding: '7px 18px' }}
             >
-              Sélectionner des fichiers
+              {t('loanRequest.selectFiles')}
             </button>
           </div>
 
@@ -363,7 +306,7 @@ const LoanRequestPage: React.FC = () => {
               required
             />
             <span className="text-slate-700 group-hover:text-slate-900 leading-relaxed text-[15px]">
-              J'accepte les conditions générales et autorise les vérifications de crédit et de solvabilité
+              {t('loanRequest.consent')}
             </span>
           </label>
         </div>
@@ -374,7 +317,7 @@ const LoanRequestPage: React.FC = () => {
             type="button"
             className="px-6 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-all duration-250 font-semibold"
           >
-            Annuler
+            {t('loanRequest.cancel')}
           </button>
           <button
             type="submit"
@@ -382,7 +325,7 @@ const LoanRequestPage: React.FC = () => {
             className="text-white rounded-xl hover:shadow-lg hover:opacity-90 transition-all duration-250 disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center space-x-2"
             style={{ background: 'linear-gradient(135deg, #ee7728 0%, #f19250 100%)', padding: '7px 18px' }}
           >
-            <span>{isSubmitting ? 'Envoi en cours...' : 'Soumettre la demande'}</span>
+            <span>{isSubmitting ? t('loanRequest.submitting') : t('loanRequest.submit')}</span>
             <CheckCircle size={18} />
           </button>
         </div>
