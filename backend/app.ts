@@ -3,12 +3,12 @@ import cors from 'cors';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import systemRouter from './routes/system.js';
-import casesRouter from './routes/cases.js';
-import documentsRouter from './routes/documents.js';
-import loanRequestsRouter from './routes/loan-requests.js';
-import oauthRouter from './routes/oauth.js';
-import tasksRouter from './routes/tasks.js';
+import systemRouter from './routes/system.ts';
+import casesRouter from './routes/cases.ts';
+import documentsRouter from './routes/documents.ts';
+import loanRequestsRouter from './routes/loan-requests.ts';
+import oauthRouter from './routes/oauth.ts';
+import tasksRouter from './routes/tasks.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

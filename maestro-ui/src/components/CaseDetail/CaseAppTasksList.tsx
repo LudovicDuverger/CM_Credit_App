@@ -1,6 +1,7 @@
 import React from 'react';
 import { User } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { CaseTask } from '../../services/cases';
 import {
   isCompletedTaskStatus,
@@ -16,12 +17,14 @@ interface Props {
 }
 
 const CaseAppTasksList: React.FC<Props> = ({ caseId, tasks }) => {
+  const { t } = useTranslation();
+
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6">
-      <h3 className="font-semibold text-slate-900">Tâches à effectuer</h3>
+      <h3 className="font-semibold text-slate-900">{t('caseDetail.tasks')}</h3>
       <div className="h-4" aria-hidden="true" />
       {!tasks.length ? (
-        <p className="text-sm text-slate-500">Aucune activité disponible.</p>
+        <p className="text-sm text-slate-500">{t('caseDetail.noTasks')}</p>
       ) : (
         <div className="space-y-3">
           {tasks.map((task, index) => {
@@ -59,9 +62,9 @@ const CaseAppTasksList: React.FC<Props> = ({ caseId, tasks }) => {
                     <div className="mt-2 text-sm text-slate-600 flex flex-wrap items-center gap-x-4 gap-y-2">
                       <span className="inline-flex items-center gap-1.5">
                         <User size={14} />
-                        {task.assignee || 'Non assigné'}
+                        {task.assignee || t('caseDetail.unassigned')}
                       </span>
-                      {task.stageName ? <span>Étape: {task.stageName}</span> : null}
+                      {task.stageName ? <span>{t('caseDetail.stage')} {task.stageName}</span> : null}
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 text-xs">

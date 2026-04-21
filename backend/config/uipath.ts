@@ -7,11 +7,18 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
+const parseOptionalNumber = (value: string | undefined): number | undefined => {
+  if (!value) return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
 export const uiPathConfig = {
   baseUrl: (process.env.UIPATH_BASE_URL || '').replace(/\/+$/, ''),
   orgName: (process.env.UIPATH_ORG_NAME || '').trim(),
   tenantName: (process.env.UIPATH_TENANT_NAME || '').trim(),
   folderKey: (process.env.UIPATH_FOLDER_KEY || '').trim(),
+  folderId: parseOptionalNumber(process.env.UIPATH_FOLDER_ID),
   clientId: (process.env.UIPATH_CLIENT_ID || '').trim(),
   clientSecret: (process.env.UIPATH_CLIENT_SECRET || '').trim(),
   scope: (process.env.UIPATH_SCOPE || 'OR.Execution OR.Folders OR.Jobs OR.Tasks PIMS DataFabric.Data.Read DataFabric.Data.Write DataFabric.Schema.Read').trim(),

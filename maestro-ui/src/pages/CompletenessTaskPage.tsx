@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Eye, FileText, Loader2, Trash2, Upload } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { formatDate, resolvePreviewMimeType, toAbsoluteDocumentUrl } from '../utils/caseFormatters';
 import { casesService, type CaseDetail } from '../services/cases';
 import { useDocumentViewer } from '../hooks/useDocumentViewer';
@@ -25,6 +26,7 @@ const DocumentPreviewCard: React.FC<DocumentPreviewCardProps> = ({
   onDeleteDocument,
   deletingDocId,
 }) => {
+  const { t } = useTranslation();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewMimeType, setPreviewMimeType] = useState<string>('');
 
@@ -96,7 +98,7 @@ const DocumentPreviewCard: React.FC<DocumentPreviewCardProps> = ({
             onClick={() => onOpenDocument(document.url || '', document.fileName || 'document', document.id)}
             disabled={openingDocId === document.id}
             className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-            title="Ouvrir dans le viewer"
+            title={t('taskDetail.openInViewer')}
           >
             {openingDocId === document.id ? <Loader2 size={14} className="animate-spin" /> : <Eye size={14} />}
           </button>
@@ -105,7 +107,7 @@ const DocumentPreviewCard: React.FC<DocumentPreviewCardProps> = ({
             onClick={() => onDeleteDocument(document.id)}
             disabled={deletingDocId === document.id}
             className="inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-white px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50"
-            title="Supprimer le document"
+            title={t('taskDetail.deleteDocument')}
           >
             {deletingDocId === document.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
           </button>
@@ -133,6 +135,7 @@ const CompletenessTaskPage: React.FC<TaskDataProps> = ({
   handleReturnToCase,
   handleComplete,
 }) => {
+  const { t } = useTranslation();
   const [uploading, setUploading] = useState(false);
   const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
   const { openingDocId, viewerOpen, viewerBlobUrl, viewerFileName, viewerMimeType, openDocument, closeViewer, downloadFromViewer } = useDocumentViewer();
@@ -164,7 +167,7 @@ const CompletenessTaskPage: React.FC<TaskDataProps> = ({
         documents: [...(current.documents || []), ...createdDocuments],
       } : current);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Impossible de téléverser le document');
+      setError(err instanceof Error ? err.message : t('taskDetail.uploadError'));
     } finally {
       setUploading(false);
     }
@@ -180,7 +183,7 @@ const CompletenessTaskPage: React.FC<TaskDataProps> = ({
         documents: (current.documents || []).filter((document) => document.id !== documentId),
       } : current);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Impossible de supprimer le document');
+      setError(err instanceof Error ? err.message : t('taskDetail.deleteError'));
     } finally {
       setDeletingDocId(null);
     }
@@ -190,10 +193,10 @@ const CompletenessTaskPage: React.FC<TaskDataProps> = ({
     <div className="detail-page">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">{taskForm?.title || task?.Title || `Tâche ${taskId}`}</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{taskForm?.title || task?.Title || t('taskDetail.defaultTitle', { taskId })}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-600">
-            <span>Dossier: {businessCaseId || caseId || '-'}</span>
-            <span>Créée le {formatDate(task?.CreationTime || taskForm?.creationTime)}</span>
+            <span>{t('taskDetail.caseLabel')} {businessCaseId || caseId || '-'}</span>
+            <span>{t('taskDetail.createdAt')} {formatDate(task?.CreationTime || taskForm?.creationTime)}</span>
           </div>
         </div>
 
@@ -203,7 +206,7 @@ const CompletenessTaskPage: React.FC<TaskDataProps> = ({
           className="inline-flex min-h-12 min-w-[170px] items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-slate-700 hover:bg-slate-50"
         >
           <ArrowLeft size={16} />
-          Retour au dossier
+          {t('taskDetail.returnToCase')}
         </button>
       </div>
 
@@ -217,17 +220,17 @@ const CompletenessTaskPage: React.FC<TaskDataProps> = ({
         <section className="rounded-2xl border border-slate-200 bg-white p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">Documents du dossier</h2>
+              <h2 className="text-lg font-semibold text-slate-900">{t('taskDetail.caseDocuments')}</h2>
             </div>
             <label className="inline-flex min-h-12 min-w-[220px] cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
               {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-              {uploading ? 'Téléversement...' : 'Uploader des documents'}
+              {uploading ? t('taskDetail.uploading') : t('taskDetail.uploadDocuments')}
               <input type="file" multiple className="hidden" onChange={handleUploadDocument} disabled={uploading} />
             </label>
           </div>
 
           {!caseDetail?.documents?.length ? (
-            <p className="text-sm text-slate-500" style={{ marginTop: '40px' }}>Aucun document disponible pour ce dossier.</p>
+            <p className="text-sm text-slate-500" style={{ marginTop: '40px' }}>{t('taskDetail.noDocuments')}</p>
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3" style={{ marginTop: '40px' }}>
               {caseDetail.documents.map((document) => (
@@ -247,7 +250,7 @@ const CompletenessTaskPage: React.FC<TaskDataProps> = ({
         <section className="rounded-2xl border border-slate-200 bg-white p-6 h-fit">
           {agentAnalysis ? (
             <>
-              <h2 className="text-lg font-semibold text-cyan-700">Conclusions de l'Agent IA</h2>
+              <h2 className="text-lg font-semibold text-cyan-700">{t('taskDetail.agentConclusions')}</h2>
               <div
                 className="prose prose-sm max-w-none text-slate-700 prose-p:my-2 prose-ul:my-2 prose-li:my-1"
                 style={{ marginTop: '20px', width: '85%', marginLeft: 'auto', marginRight: 'auto' }}
@@ -265,7 +268,7 @@ const CompletenessTaskPage: React.FC<TaskDataProps> = ({
               style={{ background: 'linear-gradient(135deg, #ee7728 0%, #f19250 100%)', padding: '10px 20px', width: '220px' }}
             >
               {submitting ? <Loader2 size={16} className="animate-spin" /> : null}
-              Réévaluer le dossier
+              {t('taskDetail.reEvaluate')}
             </button>
             <button
               type="button"
@@ -275,7 +278,7 @@ const CompletenessTaskPage: React.FC<TaskDataProps> = ({
               style={{ padding: '10px 20px', width: '220px' }}
             >
               {submitting ? <Loader2 size={16} className="animate-spin" /> : null}
-              Notifier le client
+              {t('taskDetail.notifyClient')}
             </button>
             <button
               type="button"
@@ -285,7 +288,7 @@ const CompletenessTaskPage: React.FC<TaskDataProps> = ({
               style={{ padding: '10px 20px', width: '220px' }}
             >
               {submitting ? <Loader2 size={16} className="animate-spin" /> : null}
-              Rejeter le dossier
+              {t('taskDetail.rejectCase')}
             </button>
           </div>
         </section>

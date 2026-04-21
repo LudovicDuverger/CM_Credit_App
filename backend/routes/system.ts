@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { uiPathConfig, hasUiPathBaseConfig, hasClientCredentials } from '../config/uipath.js';
-import { getBearerTokenFromRequest } from '../lib/uipath-client.js';
+import { uiPathConfig, hasUiPathBaseConfig, hasClientCredentials } from '../config/uipath.ts';
+import { getBearerTokenFromRequest } from '../lib/uipath-client.ts';
 
 const router = Router();
 
@@ -22,6 +22,7 @@ router.get('/source', (req, res) => {
     mainCaseEntityName: uiPathConfig.mainCaseEntityName,
     caseDocumentsEntityName: uiPathConfig.caseDocumentsEntityName,
     folderKey: uiPathConfig.folderKey,
+    folderId: uiPathConfig.folderId || null,
   });
 });
 

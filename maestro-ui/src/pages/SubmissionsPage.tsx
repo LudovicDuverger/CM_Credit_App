@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AlertTriangle, Clock3, Filter, Search, ShieldCheck } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { casesService, type CaseListItem } from '../services/cases';
@@ -44,6 +45,7 @@ const hasDirectTaskLink = (item: CaseListItem) => item.currentActivityType === '
 
 const SubmissionsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [cases, setCases] = useState<CaseListItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeGroup, setActiveGroup] = useState<GroupKey>('running');
@@ -64,7 +66,7 @@ const SubmissionsPage: React.FC = () => {
       setCases(response);
       setError(null);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erreur de chargement des dossiers';
+      const message = err instanceof Error ? err.message : t('submissions.loadingError');
       setError(message);
     } finally {
       setLoading(false);
@@ -113,8 +115,8 @@ const SubmissionsPage: React.FC = () => {
 
     if (!values.length) return '-';
     const avg = values.reduce((total, value) => total + value, 0) / values.length;
-    return `${avg.toFixed(1)} jours`;
-  }, [cases]);
+    return `${avg.toFixed(1)} ${t('submissions.averageDaysSuffix')}`;
+  }, [cases, t]);
 
   const conformityRate = useMemo(() => {
     if (!cases.length) return '-';
@@ -154,17 +156,17 @@ const SubmissionsPage: React.FC = () => {
     const completed = cases.filter((item) => groupForStatus(item.status) === 'completed').length;
     const faulted = cases.filter((item) => groupForStatus(item.status) === 'faulted').length;
     return [
-      { name: 'En cours', value: running, color: '#06b6d4' },
-      { name: 'Achevés', value: completed, color: '#10b981' },
-      { name: 'En erreur', value: faulted, color: '#f59e0b' },
+      { name: t('submissions.groupRunning'), value: running, color: '#06b6d4' },
+      { name: t('submissions.groupCompleted'), value: completed, color: '#10b981' },
+      { name: t('submissions.groupFaulted'), value: faulted, color: '#f59e0b' },
     ];
-  }, [cases]);
+  }, [cases, t]);
 
   const productDistributionData = useMemo(() => {
     const counters = new Map<string, number>();
 
     cases.forEach((item) => {
-      const label = String(item.creditType || 'Non renseigné').trim() || 'Non renseigné';
+      const label = String(item.creditType || t('submissions.unspecified')).trim() || t('submissions.unspecified');
       counters.set(label, (counters.get(label) || 0) + 1);
     });
 
@@ -172,14 +174,14 @@ const SubmissionsPage: React.FC = () => {
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 6);
-  }, [cases]);
+  }, [cases, t]);
 
   return (
     <div className="detail-page">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Mes dossiers en cours</h1>
-          <p className="text-slate-500 mt-1">Dossiers réels synchronisés depuis les entités case management</p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t('submissions.title')}</h1>
+          <p className="text-slate-500 mt-1">{t('submissions.subtitle')}</p>
         </div>
 
         <div className="flex items-center gap-3 mt-4 md:mt-0">
@@ -190,7 +192,7 @@ const SubmissionsPage: React.FC = () => {
             disabled={refreshing}
           >
             <Filter size={16} />
-            {refreshing ? 'Actualisation...' : 'Actualiser'}
+            {refreshing ? t('submissions.refreshing') : t('submissions.refresh')}
           </button>
         </div>
       </div>
@@ -201,7 +203,7 @@ const SubmissionsPage: React.FC = () => {
             <Search size={16} className="text-slate-500" />
             <input
               className="bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-400 w-full"
-              placeholder="Rechercher un client, un dossier..."
+              placeholder={t('submissions.searchPlaceholder')}
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
             />
@@ -209,9 +211,9 @@ const SubmissionsPage: React.FC = () => {
 
           <div className="flex flex-wrap gap-2">
             {[
-              { key: 'running' as const, label: 'En cours', className: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
-              { key: 'completed' as const, label: 'Achevés', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-              { key: 'faulted' as const, label: 'En erreur', className: 'bg-red-50 text-red-700 border-red-200' },
+              { key: 'running' as const, labelKey: 'submissions.groupRunning', className: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
+              { key: 'completed' as const, labelKey: 'submissions.groupCompleted', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+              { key: 'faulted' as const, labelKey: 'submissions.groupFaulted', className: 'bg-red-50 text-red-700 border-red-200' },
             ].map((group) => (
               <button
                 key={group.key}
@@ -221,14 +223,14 @@ const SubmissionsPage: React.FC = () => {
                 }`}
                 style={{ padding: '8px 24px' }}
               >
-                {group.label} ({groupCount(group.key)})
+                {t(group.labelKey)} ({groupCount(group.key)})
               </button>
             ))}
           </div>
         </div>
 
         {loading ? (
-          <div className="mt-6 p-6 rounded-xl bg-slate-50 text-slate-600">Chargement des dossiers...</div>
+          <div className="mt-6 p-6 rounded-xl bg-slate-50 text-slate-600">{t('submissions.loading')}</div>
         ) : error ? (
           <div className="mt-6 p-6 rounded-xl bg-red-50 border border-red-100 text-red-700">{error}</div>
         ) : (
@@ -236,13 +238,13 @@ const SubmissionsPage: React.FC = () => {
             <table className="w-full min-w-[900px]">
               <thead>
                 <tr className="text-left border-b border-slate-200">
-                  <th className="py-1.5 px-4 text-[11px] uppercase tracking-wider text-slate-500">Dossier</th>
-                  <th className="py-1.5 px-4 text-[11px] uppercase tracking-wider text-slate-500">Client</th>
-                  <th className="py-1.5 px-4 text-[11px] uppercase tracking-wider text-slate-500">Produit</th>
-                  <th className="py-1.5 px-4 text-[11px] uppercase tracking-wider text-slate-500">Montant</th>
-                  <th className="py-1.5 px-4 text-[11px] uppercase tracking-wider text-slate-500">Statut</th>
-                  <th className="py-1.5 px-4 text-[11px] uppercase tracking-wider text-slate-500">Création</th>
-                  <th className="py-1.5 px-4 text-[11px] uppercase tracking-wider text-slate-500">Action</th>
+                  <th className="py-1.5 px-4 text-[11px] uppercase tracking-wider text-slate-500">{t('submissions.colCase')}</th>
+                  <th className="py-1.5 px-4 text-[11px] uppercase tracking-wider text-slate-500">{t('submissions.colClient')}</th>
+                  <th className="py-1.5 px-4 text-[11px] uppercase tracking-wider text-slate-500">{t('submissions.colProduct')}</th>
+                  <th className="py-1.5 px-4 text-[11px] uppercase tracking-wider text-slate-500">{t('submissions.colAmount')}</th>
+                  <th className="py-1.5 px-4 text-[11px] uppercase tracking-wider text-slate-500">{t('submissions.colStatus')}</th>
+                  <th className="py-1.5 px-4 text-[11px] uppercase tracking-wider text-slate-500">{t('submissions.colCreated')}</th>
+                  <th className="py-1.5 px-4 text-[11px] uppercase tracking-wider text-slate-500">{t('submissions.colAction')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -279,7 +281,7 @@ const SubmissionsPage: React.FC = () => {
                         className="text-cyan-600 hover:text-cyan-500 hover:underline underline-offset-2 font-semibold text-sm leading-none"
                         onClick={() => navigate(`/cases/${row.id}`)}
                       >
-                        Ouvrir
+                        {t('submissions.openAction')}
                       </button>
                     </td>
                   </tr>
@@ -288,7 +290,7 @@ const SubmissionsPage: React.FC = () => {
             </table>
 
             {filteredCases.length === 0 && (
-              <div className="text-center text-slate-500 py-10">Aucun dossier dans cette catégorie.</div>
+              <div className="text-center text-slate-500 py-10">{t('submissions.noItems')}</div>
             )}
           </div>
         )}
@@ -300,7 +302,7 @@ const SubmissionsPage: React.FC = () => {
             <Clock3 size={16} />
           </div>
           <div>
-            <p className="text-xs text-slate-500">Délai moyen</p>
+            <p className="text-xs text-slate-500">{t('submissions.averageDelay')}</p>
             <p className="font-bold text-slate-900">{averageDays}</p>
           </div>
         </div>
@@ -309,7 +311,7 @@ const SubmissionsPage: React.FC = () => {
             <ShieldCheck size={16} />
           </div>
           <div>
-            <p className="text-xs text-slate-500">Conformité</p>
+            <p className="text-xs text-slate-500">{t('submissions.conformity')}</p>
             <p className="font-bold text-slate-900">{conformityRate}</p>
           </div>
         </div>
@@ -318,8 +320,8 @@ const SubmissionsPage: React.FC = () => {
             <AlertTriangle size={16} />
           </div>
           <div>
-            <p className="text-xs text-slate-500">Points d’attention</p>
-            <p className="font-bold text-slate-900">{warningCount} dossiers</p>
+            <p className="text-xs text-slate-500">{t('submissions.warnings')}</p>
+            <p className="font-bold text-slate-900">{t('submissions.warningCount', { count: warningCount })}</p>
           </div>
         </div>
       </div>
@@ -327,8 +329,8 @@ const SubmissionsPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold text-slate-900">Volume dossiers (7 derniers jours)</h3>
-            <span className="text-xs text-slate-500">Temps réel</span>
+            <h3 className="text-sm font-bold text-slate-900">{t('submissions.volumeChart')}</h3>
+            <span className="text-xs text-slate-500">{t('submissions.realTime')}</span>
           </div>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
@@ -336,7 +338,7 @@ const SubmissionsPage: React.FC = () => {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                 <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
                 <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                <Tooltip formatter={(value: number) => [`${value}`, 'Dossiers']} />
+                <Tooltip formatter={(value: number) => [`${value}`, t('submissions.cases')]} />
                 <Bar dataKey="dossiers" fill="#0ea5e9" radius={[6, 6, 0, 0]} maxBarSize={28} />
               </BarChart>
             </ResponsiveContainer>
@@ -345,8 +347,8 @@ const SubmissionsPage: React.FC = () => {
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold text-slate-900">Répartition des statuts</h3>
-            <span className="text-xs text-slate-500">Portefeuille global</span>
+            <h3 className="text-sm font-bold text-slate-900">{t('submissions.statusDistribution')}</h3>
+            <span className="text-xs text-slate-500">{t('submissions.globalPortfolio')}</span>
           </div>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
@@ -363,7 +365,7 @@ const SubmissionsPage: React.FC = () => {
                     <Cell key={item.name} fill={item.color} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: number) => [`${value}`, 'Dossiers']} />
+                <Tooltip formatter={(value: number) => [`${value}`, t('submissions.cases')]} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -380,8 +382,8 @@ const SubmissionsPage: React.FC = () => {
 
       <div className="rounded-2xl border border-slate-200 bg-white p-5">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-slate-900">Top produits traités</h3>
-          <span className="text-xs text-slate-500">Basé sur les dossiers chargés</span>
+          <h3 className="text-sm font-bold text-slate-900">{t('submissions.topProducts')}</h3>
+          <span className="text-xs text-slate-500">{t('submissions.basedOnLoaded')}</span>
         </div>
         <div className="h-52">
           <ResponsiveContainer width="100%" height="100%">
@@ -389,7 +391,7 @@ const SubmissionsPage: React.FC = () => {
               <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
               <XAxis type="number" allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
               <YAxis type="category" dataKey="name" width={140} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: '#334155' }} />
-              <Tooltip formatter={(value: number) => [`${value}`, 'Dossiers']} />
+              <Tooltip formatter={(value: number) => [`${value}`, t('submissions.cases')]} />
               <Bar dataKey="value" fill="#0284c7" radius={[0, 6, 6, 0]} maxBarSize={20} />
             </BarChart>
           </ResponsiveContainer>

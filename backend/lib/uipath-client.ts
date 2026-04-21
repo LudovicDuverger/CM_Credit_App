@@ -1,17 +1,37 @@
-import { uiPathConfig, hasClientCredentials } from '../config/uipath.js';
+import type { Request } from 'express';
+import { hasClientCredentials, uiPathConfig } from '../config/uipath.ts';
 
-let tokenCache = {
+type TokenCache = {
+  accessToken: string | null;
+  expiresAt: number;
+};
+
+type UiPathRequestOptions = {
+  method?: string;
+  query?: Record<string, unknown>;
+  headers?: Record<string, string>;
+  body?: BodyInit | null;
+};
+
+type UiPathRequestResponse = {
+  ok: boolean;
+  status: number;
+  text: string;
+  json: any;
+};
+
+let tokenCache: TokenCache = {
   accessToken: null,
   expiresAt: 0,
 };
 
-export const getBearerTokenFromRequest = (req) => {
+export const getBearerTokenFromRequest = (req: Request): string => {
   const header = String(req.headers.authorization || '');
   if (!header.toLowerCase().startsWith('bearer ')) return '';
   return header.slice(7).trim();
 };
 
-export const getAccessTokenByClientCredentials = async () => {
+export const getAccessTokenByClientCredentials = async (): Promise<string> => {
   const now = Date.now();
   if (tokenCache.accessToken && tokenCache.expiresAt > now + 30_000) {
     return tokenCache.accessToken;
@@ -37,7 +57,7 @@ export const getAccessTokenByClientCredentials = async () => {
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Token UiPath refusé (${response.status}): ${text}`);
+    throw new Error(`Token UiPath refuse (${response.status}): ${text}`);
   }
 
   const data = await response.json();
@@ -46,17 +66,17 @@ export const getAccessTokenByClientCredentials = async () => {
     expiresAt: now + (Number(data.expires_in || 3600) * 1000),
   };
 
-  return tokenCache.accessToken;
+  return tokenCache.accessToken || '';
 };
 
-export const resolveAuthToken = async (req) => {
+export const resolveAuthToken = async (req: Request): Promise<string> => {
   const bearerToken = getBearerTokenFromRequest(req);
   if (bearerToken) return bearerToken;
   return getAccessTokenByClientCredentials();
 };
 
-export const buildUiPathUrl = (path, query = {}) => {
-  const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
+export const buildUiPathUrl = (requestPath: string, query: Record<string, unknown> = {}): string => {
+  const normalizedPath = requestPath.startsWith('/') ? requestPath.slice(1) : requestPath;
   const url = new URL(`${uiPathConfig.baseUrl}/${uiPathConfig.orgName}/${uiPathConfig.tenantName}/${normalizedPath}`);
   Object.entries(query).forEach(([key, value]) => {
     if (value === undefined || value === null || value === '') return;
@@ -65,21 +85,28 @@ export const buildUiPathUrl = (path, query = {}) => {
   return url.toString();
 };
 
-export const withDataFabricFolderContext = (path, query = {}) => {
-  const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
+export const withDataFabricFolderContext = (
+  requestPath: string,
+  query: Record<string, unknown> = {},
+): Record<string, unknown> => {
+  const normalizedPath = requestPath.startsWith('/') ? requestPath.slice(1) : requestPath;
   if (!normalizedPath.startsWith('datafabric_/api/')) return query;
   if (!uiPathConfig.folderKey) return query;
   if (query.folderKey !== undefined && query.folderKey !== null && query.folderKey !== '') return query;
   return { ...query, folderKey: uiPathConfig.folderKey };
 };
 
-export const parseUiPathJsonResponse = async (response, path, contextLabel = '') => {
+export const parseUiPathJsonResponse = async (
+  response: Response,
+  requestPath: string,
+  contextLabel = '',
+): Promise<any> => {
   const statusLabel = contextLabel ? ` (${contextLabel})` : '';
   const contentType = (response.headers.get('content-type') || '').toLowerCase();
   const bodyText = await response.text();
 
   if (!response.ok) {
-    throw new Error(`UiPath API erreur (${response.status}) sur ${path}${statusLabel}: ${bodyText}`);
+    throw new Error(`UiPath API erreur (${response.status}) sur ${requestPath}${statusLabel}: ${bodyText}`);
   }
 
   if (!bodyText) return {};
@@ -90,57 +117,77 @@ export const parseUiPathJsonResponse = async (response, path, contextLabel = '')
   } catch {
     const preview = bodyText.slice(0, 300);
     const hint = seemsHtml
-      ? 'Réponse HTML reçue (token/scope invalide ou endpoint non-JSON).'
-      : 'Réponse non JSON reçue.';
+      ? 'Reponse HTML recue (token/scope invalide ou endpoint non-JSON).'
+      : 'Reponse non JSON recue.';
     throw new Error(
-      `UiPath API réponse invalide sur ${path}${statusLabel}: ${hint} content-type=${contentType || 'unknown'} body=${preview}`,
+      `UiPath API reponse invalide sur ${requestPath}${statusLabel}: ${hint} content-type=${contentType || 'unknown'} body=${preview}`,
     );
   }
 };
 
-export const uiPathJsonRequest = async (token, path, query = {}) => {
-  const response = await fetch(buildUiPathUrl(path, withDataFabricFolderContext(path, query)), {
+export const uiPathJsonRequest = async (
+  token: string,
+  requestPath: string,
+  query: Record<string, unknown> = {},
+): Promise<any> => {
+  const response = await fetch(buildUiPathUrl(requestPath, withDataFabricFolderContext(requestPath, query)), {
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
   });
-  return parseUiPathJsonResponse(response, path);
+  return parseUiPathJsonResponse(response, requestPath);
 };
 
-export const uiPathJsonRequestWithoutFolderContext = async (token, path, query = {}) => {
-  const response = await fetch(buildUiPathUrl(path, query), {
+export const uiPathJsonRequestWithoutFolderContext = async (
+  token: string,
+  requestPath: string,
+  query: Record<string, unknown> = {},
+): Promise<any> => {
+  const response = await fetch(buildUiPathUrl(requestPath, query), {
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
   });
-  return parseUiPathJsonResponse(response, path, 'no-folder');
+  return parseUiPathJsonResponse(response, requestPath, 'no-folder');
 };
 
-export const buildUiPathHeaders = (token, extraHeaders = {}) => ({
+export const buildUiPathHeaders = (
+  token: string,
+  extraHeaders: Record<string, string> = {},
+): Record<string, string> => ({
   Authorization: `Bearer ${token}`,
   'Content-Type': 'application/json',
   ...extraHeaders,
 });
 
-export const toTimestamp = (value) => {
+export const toTimestamp = (value: string): number => {
   if (!value) return 0;
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
 };
 
-export const uiPathJsonRequestWithHeaders = async (token, path, query = {}, extraHeaders = {}) => {
-  const response = await fetch(buildUiPathUrl(path, query), {
+export const uiPathJsonRequestWithHeaders = async (
+  token: string,
+  requestPath: string,
+  query: Record<string, unknown> = {},
+  extraHeaders: Record<string, string> = {},
+): Promise<any> => {
+  const response = await fetch(buildUiPathUrl(requestPath, query), {
     headers: buildUiPathHeaders(token, extraHeaders),
   });
-  return parseUiPathJsonResponse(response, path);
+  return parseUiPathJsonResponse(response, requestPath);
 };
 
-export const uiPathRequest = async (token, path, options = {}) => {
+export const uiPathRequest = async (
+  token: string,
+  requestPath: string,
+  options: UiPathRequestOptions = {},
+): Promise<UiPathRequestResponse> => {
   const { method = 'GET', query = {}, headers = {}, body } = options;
 
-  const response = await fetch(buildUiPathUrl(path, withDataFabricFolderContext(path, query)), {
+  const response = await fetch(buildUiPathUrl(requestPath, withDataFabricFolderContext(requestPath, query)), {
     method,
     headers: { Authorization: `Bearer ${token}`, ...headers },
     body,
@@ -148,10 +195,15 @@ export const uiPathRequest = async (token, path, options = {}) => {
 
   const text = await response.text();
   const contentType = response.headers.get('content-type') || '';
-  let json = null;
+  let json: any = null;
   if (contentType.includes('application/json') && text) {
-    try { json = JSON.parse(text); } catch { json = null; }
+    try {
+      json = JSON.parse(text);
+    } catch {
+      json = null;
+    }
   }
 
   return { ok: response.ok, status: response.status, text, json };
 };
+

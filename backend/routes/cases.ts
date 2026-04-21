@@ -1,14 +1,14 @@
 import { Router } from 'express';
-import { uiPathConfig, hasUiPathBaseConfig, hasClientCredentials } from '../config/uipath.js';
-import { cases, getMockList } from '../mock/data.js';
+import { uiPathConfig, hasUiPathBaseConfig, hasClientCredentials } from '../config/uipath.ts';
+import { cases, getMockList } from '../mock/data.ts';
 import {
   getBearerTokenFromRequest,
   resolveAuthToken,
   uiPathJsonRequest,
-} from '../lib/uipath-client.js';
-import { extractItems } from '../lib/data-mappers.js';
-import { fetchUiPathCaseList, fetchUiPathCaseDetail } from '../lib/fetch-uipath-data.js';
-import { getCurrentStage } from '../lib/case-processors.js';
+} from '../lib/uipath-client.ts';
+import { extractItems } from '../lib/data-mappers.ts';
+import { fetchUiPathCaseList, fetchUiPathCaseDetail } from '../lib/fetch-uipath-data.ts';
+import { getCurrentStage } from '../lib/case-processors.ts';
 
 const router = Router();
 

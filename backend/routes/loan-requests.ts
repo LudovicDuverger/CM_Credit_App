@@ -1,14 +1,14 @@
 import { Router } from 'express';
-import { uiPathConfig, hasUiPathBaseConfig, hasClientCredentials } from '../config/uipath.js';
-import { upload } from '../middleware/upload.js';
+import { uiPathConfig, hasUiPathBaseConfig, hasClientCredentials } from '../config/uipath.ts';
+import { upload } from '../middleware/upload.ts';
 import {
   getBearerTokenFromRequest,
   resolveAuthToken,
   uiPathJsonRequest,
   uiPathJsonRequestWithoutFolderContext,
-} from '../lib/uipath-client.js';
-import { extractItems } from '../lib/data-mappers.js';
-import { resolveEntityByConfiguredName } from '../lib/case-processors.js';
+} from '../lib/uipath-client.ts';
+import { extractItems } from '../lib/data-mappers.ts';
+import { resolveEntityByConfiguredName } from '../lib/case-processors.ts';
 import {
   createEntityRecord,
   getEntitySampleRecord,
@@ -17,7 +17,7 @@ import {
   mapValuesToEntityColumns,
   updateDocumentFieldsByRecordId,
   uploadEntityAttachment,
-} from '../lib/entity-operations.js';
+} from '../lib/entity-operations.ts';
 
 const router = Router();
 
@@ -207,10 +207,11 @@ router.post('/loan-requests', upload.array('documents', 20), async (req, res) =>
 
         await uploadEntityAttachment(
           token,
-          documentsEntity.name || uiPathConfig.caseDocumentsEntityName,
+          documentsEntity.id,
           documentRecordId,
           uiPathConfig.caseDocumentsAttachmentField || 'File',
           file,
+          documentsEntity.name || uiPathConfig.caseDocumentsEntityName,
         );
 
         let metadataWarning = '';

@@ -1,5 +1,6 @@
-import { uiPathConfig } from '../config/uipath.js';
-import { uiPathJsonRequestWithHeaders } from './uipath-client.js';
+import { uiPathConfig } from '../config/uipath.ts';
+import { createUiPathSdkContext } from './uipath-sdk.ts';
+import { uiPathJsonRequestWithHeaders } from './uipath-client.ts';
 import {
   normalizeField,
   normalizeSlaStatus,
@@ -16,7 +17,7 @@ import {
   mapActivityItem,
   normalizeToken,
   extractItems,
-} from './data-mappers.js';
+} from './data-mappers.ts';
 
 const CASE_TRIGGER_NODE_TYPE = 'case-management:Trigger';
 const CASE_NOT_STARTED_STATUS = 'Not Started';
@@ -475,10 +476,48 @@ export const mapCaseDetail = (instanceContext, allDocumentRecords, documentsEnti
 };
 
 export const getStagesData = async (token, instanceId, folderKey) => {
+  const resolvedFolderKey = String(folderKey || uiPathConfig.folderKey || '').trim();
+
+  try {
+    const sdk = createUiPathSdkContext(token);
+    const [stagesRaw, executionHistory] = await Promise.all([
+      sdk.caseInstances.getStages(instanceId, resolvedFolderKey),
+      sdk.caseInstances.getExecutionHistory(instanceId, resolvedFolderKey),
+    ]);
+
+    const stages = (Array.isArray(stagesRaw) ? stagesRaw : []).map((stage, index) => ({
+      id: stage?.id || `stage-${index + 1}`,
+      name: stage?.name || `Stage ${index + 1}`,
+      sla: stage?.sla || null,
+      status: stage?.status || CASE_NOT_STARTED_STATUS,
+      startedTime: '',
+      completedTime: '',
+      isCurrent: false,
+      tasks: Array.isArray(stage?.tasks)
+        ? stage.tasks.flat().map((task) => ({
+          id: task?.id || '',
+          name: task?.name || '',
+          status: task?.status || '',
+          type: task?.type || '',
+          startedTime: task?.startedTime || '',
+          completedTime: task?.completedTime || '',
+          stageId: stage?.id || '',
+          stageName: stage?.name || '',
+        }))
+        : [],
+    }));
+
+    const currentStageName = inferCurrentStageName(stages);
+    const normalizedStages = stages.map((stage) => ({ ...stage, isCurrent: stage.name === currentStageName }));
+    return { currentStageName, stages: normalizedStages, executionHistory, caseJson: null };
+  } catch (_error) {
+    // Fall back to legacy low-level requests.
+  }
+
   try {
     const [caseJson, executionHistory] = await Promise.all([
-      uiPathJsonRequestWithHeaders(token, `pims_/api/v1/cases/${instanceId}/case-json`, {}, { 'X-UIPATH-FolderKey': folderKey }),
-      uiPathJsonRequestWithHeaders(token, `pims_/api/v1/element-executions/case-instances/${instanceId}`, {}, { 'X-UIPATH-FolderKey': folderKey }),
+      uiPathJsonRequestWithHeaders(token, `pims_/api/v1/cases/${instanceId}/case-json`, {}, { 'X-UIPATH-FolderKey': resolvedFolderKey }),
+      uiPathJsonRequestWithHeaders(token, `pims_/api/v1/element-executions/case-instances/${instanceId}`, {}, { 'X-UIPATH-FolderKey': resolvedFolderKey }),
     ]);
 
     const stagesArray = buildStagesFromCaseDefinition(caseJson, executionHistory);
@@ -494,6 +533,15 @@ export const getStagesData = async (token, instanceId, folderKey) => {
 };
 
 export const getCaseTasksData = async (token, instanceId, folderKey) => {
+  try {
+    const sdk = createUiPathSdkContext(token);
+    const response = await sdk.caseInstances.getActionTasks(instanceId, { pageSize: 100 });
+    const items = Array.isArray(response?.items) ? response.items : [];
+    return items.filter((task) => task && typeof task === 'object').map(normalizeActionTask);
+  } catch (_error) {
+    // Fall back to legacy endpoint.
+  }
+
   try {
     const response = await uiPathJsonRequestWithHeaders(
       token,
@@ -513,14 +561,27 @@ export const getCaseTasksData = async (token, instanceId, folderKey) => {
 };
 
 export const getCaseActivityData = async (token, instanceId, folderKey) => {
+  const resolvedFolderKey = String(folderKey || uiPathConfig.folderKey || '').trim();
+
+  try {
+    const sdk = createUiPathSdkContext(token);
+    const [executionHistory, actionTasks] = await Promise.all([
+      sdk.caseInstances.getExecutionHistory(instanceId, resolvedFolderKey),
+      getCaseTasksData(token, instanceId, resolvedFolderKey),
+    ]);
+    return buildActivityFromExecutionHistory(executionHistory, actionTasks);
+  } catch (_error) {
+    // Fall back to legacy endpoint.
+  }
+
   try {
     const executionHistory = await uiPathJsonRequestWithHeaders(
       token,
       `pims_/api/v1/element-executions/case-instances/${instanceId}`,
       {},
-      { 'X-UIPATH-FolderKey': folderKey },
+      { 'X-UIPATH-FolderKey': resolvedFolderKey },
     );
-    const actionTasks = await getCaseTasksData(token, instanceId, folderKey);
+    const actionTasks = await getCaseTasksData(token, instanceId, resolvedFolderKey);
     return buildActivityFromExecutionHistory(executionHistory, actionTasks);
   } catch (error) {
     console.warn(`getCaseActivityData error for ${instanceId}:`, error.message);

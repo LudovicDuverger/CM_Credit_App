@@ -1,5 +1,6 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useTaskData } from '../hooks/useTaskData';
 import CompletenessTaskPage from './CompletenessTaskPage';
 import InsuranceDelegationPage from './InsuranceDelegationPage';
@@ -11,13 +12,14 @@ import InsuranceDelegationPage from './InsuranceDelegationPage';
 const TaskDetailPage: React.FC = () => {
   const taskData = useTaskData();
   const { loading, error, task, taskForm, isCompletenessTask, handleReturnToCase } = taskData;
+  const { t } = useTranslation();
 
   if (loading) {
     return (
       <div className="detail-page">
         <div className="rounded-2xl border border-slate-200 bg-white p-8 text-slate-700 flex items-center gap-3">
           <Loader2 size={18} className="animate-spin" />
-          Chargement de la tâche...
+          {t('taskDetail.loadingTask')}
         </div>
       </div>
     );
@@ -32,7 +34,7 @@ const TaskDetailPage: React.FC = () => {
           onClick={handleReturnToCase}
           className="inline-flex min-h-12 min-w-[170px] items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-3 text-slate-700 hover:bg-slate-50"
         >
-          Retour au dossier
+          {t('taskDetail.returnToCase')}
         </button>
       </div>
     );

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
   FileText,
@@ -18,15 +19,15 @@ const Sidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  const portalLabel = 'Portail Conseiller';
+  const { t } = useTranslation();
 
   const navItems = [
-    { path: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
-    { path: '/submissions', icon: FileText, label: 'Mes dossiers en cours' },
-    { path: '/priority-queue', icon: CalendarDays, label: 'Mon agenda' },
-    { path: '/portfolio', icon: Briefcase, label: 'Mon portefeuille' },
-    { path: '/reports', icon: LineChart, label: 'Rapports' },
-    { path: '/agents', icon: Landmark, label: 'Espace agence' },
+    { path: '/dashboard', icon: LayoutDashboard, label: t('sidebar.dashboard') },
+    { path: '/submissions', icon: FileText, label: t('sidebar.submissions') },
+    { path: '/priority-queue', icon: CalendarDays, label: t('sidebar.priorityQueue') },
+    { path: '/portfolio', icon: Briefcase, label: t('sidebar.portfolio') },
+    { path: '/reports', icon: LineChart, label: t('sidebar.reports') },
+    { path: '/agents', icon: Landmark, label: t('sidebar.agents') },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -55,7 +56,7 @@ const Sidebar: React.FC = () => {
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-base leading-tight">UiBank</span>
-              <span className="text-xs text-[#9dc6d3] font-medium">{portalLabel}</span>
+              <span className="text-xs text-[#9dc6d3] font-medium">{t('sidebar.portalLabel')}</span>
             </div>
           </Link>
         </div>
@@ -100,7 +101,7 @@ const Sidebar: React.FC = () => {
             style={{ padding: '10px 20px' }}
           >
             <Settings size={20} className="group-hover:text-[#1fa3b3] transition-colors" />
-            <span className="font-medium text-[15px]">Paramètres</span>
+            <span className="font-medium text-[15px]">{t('sidebar.settings')}</span>
           </Link>
           <button
             onClick={() => {
@@ -111,7 +112,7 @@ const Sidebar: React.FC = () => {
             style={{ padding: '10px 20px' }}
           >
             <LogOut size={20} className="group-hover:text-red-300 transition-colors" />
-            <span className="font-medium text-[15px]">Déconnexion</span>
+            <span className="font-medium text-[15px]">{t('sidebar.logout')}</span>
           </button>
         </div>
       </aside>
@@ -120,4 +121,3 @@ const Sidebar: React.FC = () => {
 };
 
 export default Sidebar;
-
