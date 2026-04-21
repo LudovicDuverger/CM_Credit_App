@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { uiPathConfig, hasUiPathBaseConfig } from '../config/uipath.js';
+import { uiPathConfig, hasUiPathBaseConfig } from '../config/uipath.ts';
 
 const router = Router();
 

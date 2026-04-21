@@ -1,28 +1,51 @@
-import { uiPathConfig } from '../config/uipath.js';
-import { uiPathJsonRequest, uiPathJsonRequestWithoutFolderContext, uiPathRequest } from './uipath-client.js';
+import { uiPathConfig } from '../config/uipath.ts';
+import { createUiPathSdkContext } from './uipath-sdk.ts';
+import { uiPathJsonRequest, uiPathJsonRequestWithoutFolderContext, uiPathRequest } from './uipath-client.ts';
 import {
   normalizeToken,
   normalizeField,
   getStringField,
-  normalizeSlaStatus,
   scanObjectForTokens,
   extractItems,
   getFirstObjectFromResponse,
   getEntityRecordId,
-} from './data-mappers.js';
+} from './data-mappers.ts';
 
 export const readEntityRecordsWithFallback = async (token, entityId, readQuery) => {
+  try {
+    const sdk = createUiPathSdkContext(token);
+    const response = await sdk.entities.getAllRecords(entityId, {
+      expansionLevel: Number(readQuery?.expansionLevel || 0) || undefined,
+      pageSize: Number(readQuery?.limit || 0) || undefined,
+    });
+    const items = Array.isArray(response?.items) ? response.items : [];
+    if (items.length > 0) return items;
+  } catch (_error) {
+    // Fall back to raw calls for tenant-specific edge behavior.
+  }
+
   try {
     const scopedResponse = await uiPathJsonRequest(token, `datafabric_/api/EntityService/entity/${entityId}/read`, readQuery);
     const scopedItems = extractItems(scopedResponse);
     if (scopedItems.length > 0) return scopedItems;
-  } catch (_error) { /* fall through to unscoped */ }
+  } catch (_error) {
+    // fall through to unscoped
+  }
 
   const unscopedResponse = await uiPathJsonRequestWithoutFolderContext(token, `datafabric_/api/EntityService/entity/${entityId}/read`, readQuery);
   return extractItems(unscopedResponse);
 };
 
 export const createEntityRecord = async (token, entityId, payload) => {
+  try {
+    const sdk = createUiPathSdkContext(token);
+    const inserted = await sdk.entities.insertRecordById(entityId, payload);
+    const insertedId = getEntityRecordId(inserted || {}) || getStringField(inserted || {}, ['Id', 'id', 'ID']);
+    return { record: inserted, recordId: insertedId };
+  } catch (_error) {
+    // Fall back to raw request matrix.
+  }
+
   const candidateCalls = [
     { path: `datafabric_/api/EntityService/entity/${entityId}/insert`, body: payload },
     { path: `datafabric_/api/EntityService/entity/${entityId}/insert`, body: { item: payload } },
@@ -34,7 +57,6 @@ export const createEntityRecord = async (token, entityId, payload) => {
   ];
 
   const errors = [];
-
   for (const candidate of candidateCalls) {
     const response = await uiPathRequest(token, candidate.path, {
       method: 'POST',
@@ -55,7 +77,7 @@ export const createEntityRecord = async (token, entityId, payload) => {
     errors.push(`${candidate.path} -> ${response.status}: ${response.text}`);
   }
 
-  throw new Error(`Impossible de créer un enregistrement DataFabric pour l'entité ${entityId}. Détails: ${errors.join(' | ')}`);
+  throw new Error(`Impossible de creer un enregistrement DataFabric pour l'entite ${entityId}. Details: ${errors.join(' | ')}`);
 };
 
 export const insertThenUpdateCaseId = async (token, entityId, payload, caseIdValue) => {
@@ -69,69 +91,35 @@ export const insertThenUpdateCaseId = async (token, entityId, payload, caseIdVal
   };
   const insertPayload = { ...(payload || {}), ...caseIdPayload, ...incomingChannelPayload };
 
-  const insertCandidates = [
-    { path: `datafabric_/api/EntityService/entity/${entityId}/insert`, body: insertPayload },
-    { path: `datafabric_/api/EntityService/entity/${entityId}/insert`, body: { item: insertPayload } },
-    { path: `datafabric_/api/EntityService/entity/${entityId}/insert`, body: { items: [insertPayload] } },
-    { path: `datafabric_/api/EntityService/entity/${entityId}/insertRecordsById`, body: { items: [insertPayload] } },
-    { path: `datafabric_/api/EntityService/entity/${entityId}/create`, body: { items: [insertPayload] } },
-  ];
-
-  const insertErrors = [];
-  let insertedRecord = null;
-  let insertedRecordId = '';
-
-  for (const candidate of insertCandidates) {
-    const response = await uiPathRequest(token, candidate.path, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(candidate.body),
-    });
-
-    if (!response.ok) {
-      insertErrors.push(`${candidate.path} -> ${response.status}: ${response.text}`);
-      continue;
-    }
-
-    insertedRecord = getFirstObjectFromResponse(response.json || {});
-    insertedRecordId = getEntityRecordId(insertedRecord || {}) || getStringField(insertedRecord || {}, ['Id', 'id', 'ID']);
-    if (insertedRecordId) break;
-  }
-
+  const created = await createEntityRecord(token, entityId, insertPayload);
+  const insertedRecordId = String(created?.recordId || '').trim();
   if (!insertedRecordId) {
-    throw new Error(`Insert record échoué (recordId introuvable) pour l'entité ${entityId}. Détails: ${insertErrors.join(' | ')}`);
+    throw new Error(`Insert record echoue (recordId introuvable) pour l'entite ${entityId}.`);
   }
 
-  const updateCandidates = [
-    { path: `datafabric_/api/EntityService/entity/${entityId}/upsertRecordsById`, body: { items: [{ Id: insertedRecordId, ...insertPayload }] }, method: 'POST' },
-    { path: `datafabric_/api/EntityService/entity/${entityId}/upsertRecordsById`, body: { items: [{ id: insertedRecordId, ...insertPayload }] }, method: 'POST' },
-    { path: `datafabric_/api/EntityService/entity/${entityId}/upsert`, body: { items: [{ Id: insertedRecordId, ...insertPayload }] }, method: 'POST' },
-    { path: `datafabric_/api/EntityService/entity/${entityId}/upsert`, body: { Id: insertedRecordId, ...insertPayload }, method: 'POST' },
-    { path: `datafabric_/api/EntityService/entity/${entityId}/record/${insertedRecordId}`, body: insertPayload, method: 'PATCH' },
-  ];
-
-  const updateErrors = [];
-  for (const candidate of updateCandidates) {
-    const response = await uiPathRequest(token, candidate.path, {
-      method: candidate.method || 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(candidate.body),
-    });
-    if (response.ok) {
-      return { record: insertedRecord, recordId: insertedRecordId, updatePath: candidate.path, updateWarning: '' };
-    }
-    updateErrors.push(`${candidate.path} -> ${response.status}: ${response.text}`);
+  try {
+    const sdk = createUiPathSdkContext(token);
+    await sdk.entities.updateRecordById(entityId, insertedRecordId, insertPayload);
+    return { record: created.record, recordId: insertedRecordId, updatePath: 'sdk.entities.updateRecordById', updateWarning: '' };
+  } catch (updateError) {
+    return {
+      record: created.record,
+      recordId: insertedRecordId,
+      updatePath: '',
+      updateWarning: `Update post-insert indisponible dans ce tenant. Details: ${updateError.message}`,
+    };
   }
-
-  return {
-    record: insertedRecord,
-    recordId: insertedRecordId,
-    updatePath: '',
-    updateWarning: `Update post-insert indisponible dans ce tenant. Détails: ${updateErrors.join(' | ')}`,
-  };
 };
 
 export const updateDocumentFieldsByRecordId = async (token, entityId, recordId, payload) => {
+  try {
+    const sdk = createUiPathSdkContext(token);
+    await sdk.entities.updateRecordById(entityId, recordId, payload || {});
+    return;
+  } catch (_error) {
+    // Fall back to legacy request matrix.
+  }
+
   const candidates = [
     { path: `datafabric_/api/EntityService/entity/${entityId}/upsertRecordsById`, body: { items: [{ Id: recordId, ...(payload || {}) }] }, method: 'POST' },
     { path: `datafabric_/api/EntityService/entity/${entityId}/upsertRecordsById`, body: { items: [{ id: recordId, ...(payload || {}) }] }, method: 'POST' },
@@ -151,13 +139,54 @@ export const updateDocumentFieldsByRecordId = async (token, entityId, recordId, 
     errors.push(`${candidate.path} -> ${response.status}: ${response.text}`);
   }
 
-  throw new Error(`Impossible de mettre à jour les champs document pour ${recordId}. Détails: ${errors.join(' | ')}`);
+  throw new Error(`Impossible de mettre a jour les champs document pour ${recordId}. Details: ${errors.join(' | ')}`);
 };
 
-export const uploadEntityAttachment = async (token, entityName, recordId, fieldName, file) => {
+export const uploadEntityAttachment = async (token, entityId, recordId, fieldName, file, entityName = '') => {
+  const fileName = String(file?.originalname || 'document.bin').trim() || 'document.bin';
+  const mimeType = String(file?.mimetype || 'application/octet-stream').trim() || 'application/octet-stream';
+  const fileBytes = file?.buffer instanceof Uint8Array ? file.buffer : new Uint8Array(file?.buffer || []);
+  const blob = new Blob([fileBytes], { type: mimeType });
+  const canUseNamedFile = typeof File !== 'undefined';
+
+  if (canUseNamedFile) {
+    try {
+      const sdk = createUiPathSdkContext(token);
+      const namedFile = new File([fileBytes], fileName, { type: mimeType });
+      await sdk.entities.uploadAttachment(entityId, recordId, fieldName, namedFile);
+      return;
+    } catch (_error) {
+      // Fall back to raw endpoint variation.
+    }
+  }
+
+  if (!entityName) {
+    throw new Error(`Impossible d'uploader la piece jointe: nom d'entite manquant pour le fallback raw.`);
+  }
+
+  const originalFileConstructor = (globalThis as any).File;
+  const shouldInstallFilePolyfill = typeof File === 'undefined';
+  if (shouldInstallFilePolyfill) {
+    (globalThis as any).File = class FilePolyfill extends Blob {
+      name: string;
+      lastModified: number;
+
+      constructor(fileBits: BlobPart[], fileNameValue: string, options: FilePropertyBag = {}) {
+        super(fileBits, options);
+        this.name = String(fileNameValue || 'document.bin');
+        this.lastModified = Number(options.lastModified || Date.now());
+      }
+    };
+  }
+
   const formData = new FormData();
-  const blob = new Blob([file.buffer], { type: file.mimetype || 'application/octet-stream' });
-  formData.append('file', blob, file.originalname || 'document.bin');
+  try {
+    formData.append('file', blob, fileName);
+  } finally {
+    if (shouldInstallFilePolyfill) {
+      (globalThis as any).File = originalFileConstructor;
+    }
+  }
 
   const errors = [];
   for (const method of ['POST', 'PUT']) {
@@ -166,10 +195,20 @@ export const uploadEntityAttachment = async (token, entityName, recordId, fieldN
     errors.push(`${method} -> ${response.status}: ${response.text}`);
   }
 
-  throw new Error(`Impossible d'uploader la pièce jointe sur ${entityName}/${recordId}/${fieldName}. ${errors.join(' | ')}`);
+  throw new Error(`Impossible d'uploader la piece jointe sur ${entityName}/${recordId}/${fieldName}. ${errors.join(' | ')}`);
 };
 
 export const deleteEntityRecordById = async (token, entityId, recordId) => {
+  try {
+    const sdk = createUiPathSdkContext(token);
+    const response = await sdk.entities.deleteRecordsById(entityId, [recordId]);
+    if (!Array.isArray(response?.failureRecords) || response.failureRecords.length === 0) {
+      return;
+    }
+  } catch (_error) {
+    // Fall back to raw endpoint matrix.
+  }
+
   const candidates = [
     { path: `datafabric_/api/EntityService/entity/${entityId}/record/${recordId}`, method: 'DELETE' },
     { path: `datafabric_/api/EntityService/entity/${entityId}/delete`, method: 'POST', body: [recordId] },
@@ -191,10 +230,18 @@ export const deleteEntityRecordById = async (token, entityId, recordId) => {
     errors.push(`${candidate.path} -> ${response.status}: ${response.text}`);
   }
 
-  throw new Error(`Impossible de supprimer l'enregistrement ${recordId} de l'entité ${entityId}. Détails: ${errors.join(' | ')}`);
+  throw new Error(`Impossible de supprimer l'enregistrement ${recordId} de l'entite ${entityId}. Details: ${errors.join(' | ')}`);
 };
 
 export const getEntitySampleRecord = async (token, entityId) => {
+  try {
+    const sdk = createUiPathSdkContext(token);
+    const response = await sdk.entities.getAllRecords(entityId, { pageSize: 1, expansionLevel: 2 });
+    return response?.items?.[0] && typeof response.items[0] === 'object' ? response.items[0] : {};
+  } catch (_error) {
+    // Fall back to raw endpoint.
+  }
+
   const response = await uiPathJsonRequest(token, `datafabric_/api/EntityService/entity/${entityId}/read`, {
     limit: 1, start: 0, expansionLevel: 2,
   });

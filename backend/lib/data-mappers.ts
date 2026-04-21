@@ -92,7 +92,7 @@ export const getTaskTime = (task, aliases = []) => {
   return findValueByKeyTokens(task, aliases);
 };
 
-export const mapTaskLikeObject = (task, index = 0, fallback = {}) => {
+export const mapTaskLikeObject = (task, index = 0, fallback = {} as any) => {
   const stageName =
     getStringField(task, ['stageName', 'stage', 'stageDisplayName'])
     || getStringField(task?.stage || {}, ['name', 'stageName'])

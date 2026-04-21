@@ -1,5 +1,5 @@
-import { createApp } from './app.js';
-import { hasClientCredentials, hasUiPathBaseConfig } from './config/uipath.js';
+import { createApp } from './app.ts';
+import { hasClientCredentials, hasUiPathBaseConfig } from './config/uipath.ts';
 
 const port = process.env.PORT || 3001;
 const { app, hasFrontendBuild } = createApp();

@@ -1,5 +1,6 @@
-import { uiPathConfig } from '../config/uipath.js';
-import { uiPathJsonRequest, uiPathJsonRequestWithoutFolderContext } from './uipath-client.js';
+import { uiPathConfig } from '../config/uipath.ts';
+import { createUiPathSdkContext } from './uipath-sdk.ts';
+import { uiPathJsonRequest, uiPathJsonRequestWithoutFolderContext } from './uipath-client.ts';
 import {
   normalizeSlaStatus,
   getStringField,
@@ -9,7 +10,7 @@ import {
   extractItems,
   isActiveProgressStatus,
   normalizeToken,
-} from './data-mappers.js';
+} from './data-mappers.ts';
 import {
   resolveEntityByConfiguredName,
   buildMainCaseIndex,
@@ -19,14 +20,14 @@ import {
   getCaseTasksData,
   buildActivityFromExecutionHistory,
   inferCurrentStageName,
-} from './case-processors.js';
+} from './case-processors.ts';
 import {
   readEntityRecordsWithFallback,
   matchesTargetCaseModel,
   matchesTargetProcessKey,
   matchesTargetFolder,
-} from './entity-operations.js';
-import { mapTaskLikeObject } from './data-mappers.js';
+} from './entity-operations.ts';
+import { mapTaskLikeObject } from './data-mappers.ts';
 
 const isCompletedTaskStatus = (status = '', taskState = '') => {
   const normalized = `${String(status)} ${String(taskState)}`.toLowerCase();
@@ -140,17 +141,36 @@ export const fetchUiPathCaseDetail = async (token, requestedId) => {
   return mapCaseDetail(enrichedContext, documentRecords, documentsEntityName);
 };
 
-const fetchUiPathBaseData = async (token, options = {}) => {
+const fetchUiPathBaseData = async (token, options: any = {}) => {
   const { includeDocuments = true } = options;
-  const [processesResponse, instancesResponse, entitiesResponse] = await Promise.all([
-    uiPathJsonRequest(token, 'pims_/api/v1/processes/summary', { processType: 'CaseManagement' }),
-    uiPathJsonRequest(token, 'pims_/api/v1/instances', { processType: 'CaseManagement', pageSize: 200 }),
-    uiPathJsonRequest(token, 'datafabric_/api/Entity'),
-  ]);
+  let processes = [];
+  let instances = [];
+  let entities = [];
 
-  const processes = processesResponse?.processes || [];
-  const instances = instancesResponse?.instances || [];
-  let entities = extractItems(entitiesResponse);
+  try {
+    const sdk = createUiPathSdkContext(token);
+    const [processesResponse, instancesResponse, entitiesResponse] = await Promise.all([
+      sdk.cases.getAll(),
+      sdk.caseInstances.getAll({ pageSize: 200 }),
+      sdk.entities.getAll(),
+    ]);
+
+    processes = Array.isArray(processesResponse) ? processesResponse : [];
+    instances = Array.isArray(instancesResponse?.items) ? instancesResponse.items : [];
+    entities = Array.isArray(entitiesResponse) ? entitiesResponse : [];
+  } catch (_error) {
+    // Fallback for tenant-specific issues.
+    const [processesResponse, instancesResponse, entitiesResponse] = await Promise.all([
+      uiPathJsonRequest(token, 'pims_/api/v1/processes/summary', { processType: 'CaseManagement' }),
+      uiPathJsonRequest(token, 'pims_/api/v1/instances', { processType: 'CaseManagement', pageSize: 200 }),
+      uiPathJsonRequest(token, 'datafabric_/api/Entity'),
+    ]);
+
+    processes = processesResponse?.processes || [];
+    instances = instancesResponse?.instances || [];
+    entities = extractItems(entitiesResponse);
+  }
+
   const filteredInstances = instances.filter((instance) => (
     matchesTargetProcessKey(instance)
     && matchesTargetCaseModel(instance)
